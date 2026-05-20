@@ -34,8 +34,13 @@ export const auth = betterAuth({
   }),
 
   advanced: {
-    // Default generator is nanoid; our schema uses uuid columns throughout
-    generateId: () => crypto.randomUUID(),
+    database: {
+      // pg provider sets supportsUUIDs:true which makes "uuid" rely on DB DEFAULT.
+      // accounts/sessions/verifications use text(id) with no DB default, so use a
+      // function instead — this bypasses the supportsUUIDs check and always passes
+      // the UUID as a string value directly.
+      generateId: () => crypto.randomUUID(),
+    },
     crossSubdomainCookies: { enabled: false },
     defaultCookieAttributes: {
       httpOnly: true,
@@ -72,8 +77,8 @@ export const auth = betterAuth({
               userId: user.id,
               tier: "standard",
               pointsBalance: 0,
-              lifetimeDepositHalalas: BigInt(0),
-              lifetimeSpendHalalas: BigInt(0),
+              lifetimeDepositHalalas: 0,
+              lifetimeSpendHalalas: 0,
             }),
           ]);
         },
