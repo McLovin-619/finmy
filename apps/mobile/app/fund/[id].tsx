@@ -28,9 +28,9 @@ const MOCK: Record<string, FundRecord> = {
     value: 5319000,
     since: "Jan 2025",
     allocation: [
-      { label: "Technology", pct: 55, color: "#7C3AED" },
-      { label: "Healthcare", pct: 20, color: "#EC4899" },
-      { label: "Financials", pct: 15, color: "#F0ABFC" },
+      { label: "Technology", pct: 55, color: "#C8911A" },
+      { label: "Healthcare", pct: 20, color: "#D4A830" },
+      { label: "Financials", pct: 15, color: "#E8C86A" },
       { label: "Other", pct: 10, color: "#D1D5DB" },
     ],
   },
@@ -52,7 +52,7 @@ export default function FundDetailScreen() {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={["#7C3AED", "#EC4899"]}
+        colors={["#C8911A", "#D4A830"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.hero}
@@ -121,7 +121,7 @@ export default function FundDetailScreen() {
             <Switch
               value={autoInvest}
               onValueChange={setAutoInvest}
-              trackColor={{ false: "#E5E7EB", true: "#7C3AED" }}
+              trackColor={{ false: "#E5E7EB", true: "#C8911A" }}
               thumbColor="white"
             />
           </View>
@@ -156,7 +156,7 @@ export default function FundDetailScreen() {
         {/* CTA */}
         <TouchableOpacity style={styles.ctaWrap} activeOpacity={0.85}>
           <LinearGradient
-            colors={["#7C3AED", "#EC4899"]}
+            colors={["#C8911A", "#D4A830"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.ctaGradient}
@@ -170,7 +170,7 @@ export default function FundDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   hero: { paddingHorizontal: 24, paddingBottom: 36 },
   backButton: {
     alignSelf: "flex-start",
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   growthText: { fontSize: 13, color: "white", fontFamily: "Inter_500Medium" },
   body: { flex: 1, marginTop: -16 },
   card: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     marginHorizontal: 20,
     borderRadius: 20,
     padding: 20,
@@ -241,19 +241,19 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 15,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 16,
   },
   weekBadge: {
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  weekBadgeText: { fontSize: 12, color: "#7C3AED", fontFamily: "Inter_500Medium" },
+  weekBadgeText: { fontSize: 12, color: "#C8911A", fontFamily: "Inter_500Medium" },
   chartPlaceholder: {
     height: 100,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#1E1A10",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -263,17 +263,17 @@ const styles = StyleSheet.create({
   infoItem: { flex: 1, alignItems: "center" },
   infoLabel: {
     fontSize: 10,
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.5,
     marginBottom: 4,
   },
-  infoValue: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  infoValue: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
   returnGreen: { color: "#10B981" },
-  infoDivider: { width: 1, height: 36, backgroundColor: "#F3F4F6" },
+  infoDivider: { width: 1, height: 36, backgroundColor: "#1E1A10" },
   autoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  autoTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 3 },
-  autoSubtitle: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  autoTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 3 },
+  autoSubtitle: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
   autoAmount: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -283,17 +283,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#F3F4F6",
   },
-  autoAmountLabel: { fontSize: 13, color: "#6B7280", fontFamily: "Inter_400Regular" },
-  autoAmountValue: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  autoAmountLabel: { fontSize: 13, color: "#8C7C55", fontFamily: "Inter_400Regular" },
+  autoAmountValue: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
   allocRow: { flexDirection: "row", alignItems: "center", marginBottom: 14, gap: 10 },
   allocDot: { width: 10, height: 10, borderRadius: 5 },
-  allocLabel: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#374151", width: 90 },
-  allocBarBg: { flex: 1, height: 6, backgroundColor: "#F3F4F6", borderRadius: 3 },
+  allocLabel: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#A89B6E", width: 90 },
+  allocBarBg: { flex: 1, height: 6, backgroundColor: "#1E1A10", borderRadius: 3 },
   allocBarFill: { height: 6, borderRadius: 3 },
   allocPct: {
     fontSize: 12,
     fontFamily: "Inter_500Medium",
-    color: "#6B7280",
+    color: "#8C7C55",
     width: 34,
     textAlign: "right",
   },

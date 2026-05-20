@@ -72,9 +72,9 @@ const ICON_MAP: Record<
   { name: React.ComponentProps<typeof Ionicons>["name"]; color: string; bg: string }
 > = {
   payment: { name: "receipt-outline", color: "#F59E0B", bg: "#FEF3C7" },
-  transaction: { name: "swap-horizontal-outline", color: "#7C3AED", bg: "#F4F1FA" },
+  transaction: { name: "swap-horizontal-outline", color: "#C8911A", bg: "#221D12" },
   investment: { name: "trending-up-outline", color: "#10B981", bg: "#D1FAE5" },
-  allowance: { name: "people-outline", color: "#EC4899", bg: "#FCE7F3" },
+  allowance: { name: "people-outline", color: "#D4A830", bg: "#FCE7F3" },
 };
 
 function NotifItem({ item }: { item: Notification }) {
@@ -102,7 +102,7 @@ export default function NotificationsScreen() {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#1A1426" />
+          <Ionicons name="chevron-back" size={22} color="#EDE0B0" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         <TouchableOpacity>
@@ -128,14 +128,14 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
@@ -146,12 +146,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
-  markAll: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  markAll: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
   sectionLabel: {
     fontSize: 11,
     fontFamily: "Inter_500Medium",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 8,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
@@ -186,17 +186,17 @@ const styles = StyleSheet.create({
   itemTitle: {
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     flex: 1,
     marginRight: 8,
   },
-  itemTime: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
-  itemDesc: { fontSize: 13, color: "#6B7280", fontFamily: "Inter_400Regular", lineHeight: 18 },
+  itemTime: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  itemDesc: { fontSize: 13, color: "#8C7C55", fontFamily: "Inter_400Regular", lineHeight: 18 },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     marginTop: 4,
     flexShrink: 0,
   },

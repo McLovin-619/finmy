@@ -9,16 +9,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#7C3AED",
-        secondary: "#EC4899",
-        accent: "#F0ABFC",
+        primary: "#C8911A",
+        secondary: "#D4A830",
+        accent: "#E8C86A",
         surface: {
-          light: "#F4F1FA",
-          dark: "#1A1426",
+          light: "#221D12",
+          dark: "#1A1610",
         },
         bg: {
-          light: "#FAFAFA",
-          dark: "#0F0B1A",
+          light: "#0D0B07",
+          dark: "#0A0907",
         },
       },
       fontFamily: {

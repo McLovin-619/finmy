@@ -1,6 +1,6 @@
 import { createEnv } from "@finmy/lib";
 import { db } from "@finmy/db";
-import { accounts, digitalWallets, sessions, users, verifications } from "@finmy/db/schema";
+import { accounts, digitalWallets, loyalty, sessions, users, verifications } from "@finmy/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createMiddleware } from "hono/factory";
@@ -60,15 +60,22 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          // Derive a unique placeholder IBAN from the user UUID until a real
-          // card-issuing partner is integrated (SA BBAN = 20 alphanum chars).
           const bban = user.id.replace(/-/g, "").slice(0, 20).toUpperCase();
-          await db.insert(digitalWallets).values({
-            userId: user.id,
-            iban: `SA00${bban}`,
-            balanceHalalas: 0,
-            currency: "SAR",
-          });
+          await Promise.all([
+            db.insert(digitalWallets).values({
+              userId: user.id,
+              iban: `SA00${bban}`,
+              balanceHalalas: 0,
+              currency: "SAR",
+            }),
+            db.insert(loyalty).values({
+              userId: user.id,
+              tier: "standard",
+              pointsBalance: 0,
+              lifetimeDepositHalalas: BigInt(0),
+              lifetimeSpendHalalas: BigInt(0),
+            }),
+          ]);
         },
       },
     },

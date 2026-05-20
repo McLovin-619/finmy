@@ -185,14 +185,14 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#1A1308",
   },
   keyboardView: {
     flex: 1,
   },
   card: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#0D0B07",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
   },
@@ -203,13 +203,13 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 28,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 8,
   },
   subheading: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "#6B7280",
+    color: "#8C7C55",
     lineHeight: 21,
     marginBottom: 28,
   },
@@ -223,11 +223,11 @@ const styles = StyleSheet.create({
   termsText: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    color: "#6B7280",
+    color: "#8C7C55",
     lineHeight: 20,
   },
   termsLink: {
-    color: "#7C3AED",
+    color: "#C8911A",
     fontFamily: "Inter_500Medium",
   },
   termsError: {
@@ -248,12 +248,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#1E1A10",
   },
   dividerText: {
     marginHorizontal: 12,
     fontSize: 13,
-    color: "#9CA3AF",
+    color: "#5A5035",
     fontFamily: "Inter_400Regular",
   },
   socialRow: {
@@ -268,12 +268,12 @@ const styles = StyleSheet.create({
   },
   signInPrompt: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#8C7C55",
     fontFamily: "Inter_400Regular",
   },
   signInLink: {
     fontSize: 14,
-    color: "#7C3AED",
+    color: "#C8911A",
     fontFamily: "Inter_600SemiBold",
   },
 });

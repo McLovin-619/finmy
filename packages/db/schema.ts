@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -31,6 +32,10 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "deduction",
   "top_up",
   "withdrawal",
+  "allowance_payment",
+  "investment_deduction",
+  "bill_payment",
+  "card_payment",
 ]);
 
 export const transactionStatusEnum = pgEnum("transaction_status", [
@@ -39,6 +44,63 @@ export const transactionStatusEnum = pgEnum("transaction_status", [
   "failed",
   "reversed",
 ]);
+
+export const investmentSectorEnum = pgEnum("investment_sector", [
+  "us_stocks",
+  "saudi_equities",
+  "real_estate",
+  "sukuk",
+]);
+
+export const investmentCadenceEnum = pgEnum("investment_cadence", ["monthly", "quarterly"]);
+
+export const investmentStatusEnum = pgEnum("investment_status", [
+  "active",
+  "paused",
+  "cancelled",
+]);
+
+export const billCategoryEnum = pgEnum("bill_category", [
+  "rent",
+  "utilities",
+  "bnpl",
+  "telecom",
+  "insurance",
+  "other",
+]);
+
+export const cardNetworkEnum = pgEnum("card_network", ["mada", "visa", "mastercard"]);
+
+export const cardTypeEnum = pgEnum("card_type", ["virtual", "physical"]);
+
+export const cardStatusEnum = pgEnum("card_status", ["active", "frozen", "cancelled"]);
+
+export const subscriptionCategoryEnum = pgEnum("subscription_category", [
+  "streaming",
+  "music",
+  "gaming",
+  "fitness",
+  "software",
+  "other",
+]);
+
+export const subscriptionCycleEnum = pgEnum("subscription_cycle", ["monthly", "yearly"]);
+
+export const allowanceRelationEnum = pgEnum("allowance_relation", [
+  "son",
+  "daughter",
+  "staff",
+  "other",
+]);
+
+export const loyaltyTierEnum = pgEnum("loyalty_tier", [
+  "standard",
+  "silver",
+  "gold",
+  "diamond",
+]);
+
+export const groupMemberRoleEnum = pgEnum("group_member_role", ["owner", "member"]);
 
 // ─── Core user table ──────────────────────────────────────────────────────────
 //
@@ -151,6 +213,44 @@ export const digitalWallets = pgTable("digital_wallets", {
     .$onUpdate(() => new Date()),
 });
 
+// ─── Linked bank accounts (Plaid) ─────────────────────────────────────────────
+//
+// access_token is envelope-encrypted with AES-GCM; key lives in KMS/env.
+// Only last4 digits of account number are stored — never full account number.
+
+export const linkedAccounts = pgTable(
+  "linked_accounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    plaidItemId: text("plaid_item_id").notNull().unique(),
+    plaidAccountId: text("plaid_account_id").notNull(),
+    institutionId: text("institution_id").notNull(),
+    institutionName: text("institution_name").notNull(),
+    name: text("name").notNull(),
+    mask: text("mask"),
+    accountType: text("account_type").notNull(),
+    accountSubtype: text("account_subtype"),
+    // AES-GCM encrypted Plaid access_token + nonce — never plaintext
+    encryptedAccessToken: text("encrypted_access_token").notNull(),
+    accessTokenIv: text("access_token_iv").notNull(),
+    // Plaid transactions sync cursor — tracks position in the update stream
+    cursor: text("cursor"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index("linked_accounts_user_id_idx").on(t.userId),
+    index("linked_accounts_plaid_item_id_idx").on(t.plaidItemId),
+  ],
+);
+
 // ─── Household staff ──────────────────────────────────────────────────────────
 
 export const householdStaff = pgTable(
@@ -205,6 +305,248 @@ export const transactions = pgTable(
   ],
 );
 
+// ─── Investment schedules ─────────────────────────────────────────────────────
+
+export const investmentSchedules = pgTable(
+  "investment_schedules",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    walletId: uuid("wallet_id")
+      .notNull()
+      .references(() => digitalWallets.id, { onDelete: "restrict" }),
+    sector: investmentSectorEnum("sector").notNull(),
+    amountHalalas: integer("amount_halalas").notNull(),
+    cadence: investmentCadenceEnum("cadence").notNull().default("monthly"),
+    nextExecutionDate: timestamp("next_execution_date", { withTimezone: true }).notNull(),
+    status: investmentStatusEnum("status").notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index("investment_schedules_user_id_idx").on(t.userId),
+    index("investment_schedules_next_exec_idx").on(t.nextExecutionDate, t.status),
+  ],
+);
+
+// ─── Bills ────────────────────────────────────────────────────────────────────
+//
+// provider is free-form text ("tabby" | "tamara" | null) — enum would require
+// a migration per new BNPL partner.
+
+export const bills = pgTable(
+  "bills",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    walletId: uuid("wallet_id")
+      .notNull()
+      .references(() => digitalWallets.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    category: billCategoryEnum("category").notNull(),
+    // 0 = variable amount (e.g. utilities)
+    amountHalalas: integer("amount_halalas").notNull().default(0),
+    dueDayOfMonth: integer("due_day_of_month"),
+    nextDueDate: timestamp("next_due_date", { withTimezone: true }).notNull(),
+    provider: text("provider"),
+    externalRef: text("external_ref"),
+    autoPay: boolean("auto_pay").notNull().default(false),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index("bills_user_id_next_due_idx").on(t.userId, t.nextDueDate)],
+);
+
+// ─── Cards ────────────────────────────────────────────────────────────────────
+
+export const cards = pgTable(
+  "cards",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    walletId: uuid("wallet_id")
+      .notNull()
+      .references(() => digitalWallets.id, { onDelete: "restrict" }),
+    last4: text("last4").notNull(),
+    network: cardNetworkEnum("network").notNull(),
+    cardType: cardTypeEnum("card_type").notNull(),
+    label: text("label"),
+    // null = no spend limit
+    spendLimitHalalas: integer("spend_limit_halalas"),
+    status: cardStatusEnum("status").notNull().default("active"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index("cards_user_id_idx").on(t.userId)],
+);
+
+// ─── Subscriptions ────────────────────────────────────────────────────────────
+
+export const subscriptions = pgTable(
+  "subscriptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    category: subscriptionCategoryEnum("category").notNull(),
+    amountHalalas: integer("amount_halalas").notNull(),
+    cycle: subscriptionCycleEnum("cycle").notNull(),
+    nextBillingDate: timestamp("next_billing_date", { withTimezone: true }).notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    // Non-null when the subscription was auto-detected from transaction history
+    detectedFromWalletId: uuid("detected_from_wallet_id").references(
+      () => digitalWallets.id,
+      { onDelete: "set null" },
+    ),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index("subscriptions_user_id_idx").on(t.userId)],
+);
+
+// ─── Allowances ───────────────────────────────────────────────────────────────
+//
+// Scheduled money distributions to dependents (children, family).
+// Domestic staff payroll lives in household_staff — this table is for simpler
+// allowance flows without role/contract structure.
+
+export const allowances = pgTable(
+  "allowances",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    relation: allowanceRelationEnum("relation").notNull(),
+    targetIbanOrPhone: text("target_iban_or_phone").notNull(),
+    amountHalalas: integer("amount_halalas").notNull(),
+    frequency: payoutFrequencyEnum("frequency").notNull(),
+    nextPayoutDate: timestamp("next_payout_date", { withTimezone: true }).notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    totalSentHalalas: integer("total_sent_halalas").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index("allowances_user_id_idx").on(t.userId)],
+);
+
+// ─── Loyalty ──────────────────────────────────────────────────────────────────
+//
+// One row per user — created alongside the wallet on sign-up.
+// Lifetime halalas use bigint: cumulative totals can exceed integer's ~21M SAR cap.
+
+export const loyalty = pgTable("loyalty", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tier: loyaltyTierEnum("tier").notNull().default("standard"),
+  pointsBalance: integer("points_balance").notNull().default(0),
+  lifetimePoints: integer("lifetime_points").notNull().default(0),
+  lifetimeDepositHalalas: bigint("lifetime_deposit_halalas", { mode: "number" })
+    .notNull()
+    .default(0),
+  lifetimeSpendHalalas: bigint("lifetime_spend_halalas", { mode: "number" })
+    .notNull()
+    .default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+//
+// type is free-form text validated by Zod at insert time — avoids a migration
+// every time a new notification type is added.
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    isRead: boolean("is_read").notNull().default(false),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Primary feed: user's notifications newest-first
+    index("notifications_user_id_created_idx").on(t.userId, t.createdAt),
+    // Unread badge count query
+    index("notifications_user_id_read_idx").on(t.userId, t.isRead),
+  ],
+);
+
+// ─── Groups ───────────────────────────────────────────────────────────────────
+//
+// Shared expense / IOU ledger groups. Group splits and settlements will extend
+// this via a group_expenses table when the feature is implemented.
+
+export const groups = pgTable("groups", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  createdByUserId: uuid("created_by_user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const groupMembers = pgTable(
+  "group_members",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: groupMemberRoleEnum("role").notNull().default("member"),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("group_members_group_id_idx").on(t.groupId),
+    index("group_members_user_id_idx").on(t.userId),
+  ],
+);
+
 // ─── Audit log ────────────────────────────────────────────────────────────────
 // Immutable SAMA-compliance trace — rows are never updated or deleted.
 // action and targetType are free-form text validated by Zod at insert time;
@@ -232,11 +574,20 @@ export const auditLogs = pgTable(
 
 // ─── Relations ────────────────────────────────────────────────────────────────
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   sessions: many(sessions),
   accounts: many(accounts),
   wallets: many(digitalWallets),
+  linkedAccounts: many(linkedAccounts),
   staff: many(householdStaff),
+  investmentSchedules: many(investmentSchedules),
+  bills: many(bills),
+  cards: many(cards),
+  subscriptions: many(subscriptions),
+  allowances: many(allowances),
+  loyalty: one(loyalty),
+  notifications: many(notifications),
+  groups: many(groupMembers),
   auditLogs: many(auditLogs),
 }));
 
@@ -251,6 +602,13 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const digitalWalletsRelations = relations(digitalWallets, ({ one, many }) => ({
   owner: one(users, { fields: [digitalWallets.userId], references: [users.id] }),
   transactions: many(transactions),
+  investmentSchedules: many(investmentSchedules),
+  bills: many(bills),
+  cards: many(cards),
+}));
+
+export const linkedAccountsRelations = relations(linkedAccounts, ({ one }) => ({
+  user: one(users, { fields: [linkedAccounts.userId], references: [users.id] }),
 }));
 
 export const householdStaffRelations = relations(householdStaff, ({ one, many }) => ({
@@ -267,6 +625,54 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     fields: [transactions.staffRecipientId],
     references: [householdStaff.id],
   }),
+}));
+
+export const investmentSchedulesRelations = relations(investmentSchedules, ({ one }) => ({
+  user: one(users, { fields: [investmentSchedules.userId], references: [users.id] }),
+  wallet: one(digitalWallets, {
+    fields: [investmentSchedules.walletId],
+    references: [digitalWallets.id],
+  }),
+}));
+
+export const billsRelations = relations(bills, ({ one }) => ({
+  user: one(users, { fields: [bills.userId], references: [users.id] }),
+  wallet: one(digitalWallets, { fields: [bills.walletId], references: [digitalWallets.id] }),
+}));
+
+export const cardsRelations = relations(cards, ({ one }) => ({
+  user: one(users, { fields: [cards.userId], references: [users.id] }),
+  wallet: one(digitalWallets, { fields: [cards.walletId], references: [digitalWallets.id] }),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, { fields: [subscriptions.userId], references: [users.id] }),
+  detectedFromWallet: one(digitalWallets, {
+    fields: [subscriptions.detectedFromWalletId],
+    references: [digitalWallets.id],
+  }),
+}));
+
+export const allowancesRelations = relations(allowances, ({ one }) => ({
+  user: one(users, { fields: [allowances.userId], references: [users.id] }),
+}));
+
+export const loyaltyRelations = relations(loyalty, ({ one }) => ({
+  user: one(users, { fields: [loyalty.userId], references: [users.id] }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, { fields: [notifications.userId], references: [users.id] }),
+}));
+
+export const groupsRelations = relations(groups, ({ one, many }) => ({
+  createdBy: one(users, { fields: [groups.createdByUserId], references: [users.id] }),
+  members: many(groupMembers),
+}));
+
+export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
+  group: one(groups, { fields: [groupMembers.groupId], references: [groups.id] }),
+  user: one(users, { fields: [groupMembers.userId], references: [users.id] }),
 }));
 
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({

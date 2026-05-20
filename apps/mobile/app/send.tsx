@@ -167,7 +167,7 @@ export default function SendScreen() {
     >
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={goBack}>
-          <Ionicons name="chevron-back" size={24} color="#1A1426" />
+          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{headerTitle[step]}</Text>
         <View style={{ width: 24 }} />
@@ -275,7 +275,7 @@ function TypeStep({
         activeOpacity={0.8}
       >
         <View style={[styles.scheduledToggleIcon, scheduled && styles.scheduledToggleIconOn]}>
-          <Ionicons name="calendar-outline" size={18} color={scheduled ? "white" : "#7C3AED"} />
+          <Ionicons name="calendar-outline" size={18} color={scheduled ? "white" : "#C8911A"} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.scheduledToggleLabel, scheduled && styles.scheduledToggleLabelOn]}>
@@ -300,7 +300,7 @@ function TypeStep({
           activeOpacity={0.7}
         >
           <View style={styles.typeIconWrap}>
-            <Ionicons name={t.icon} size={22} color="#7C3AED" />
+            <Ionicons name={t.icon} size={22} color="#C8911A" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.typeLabel}>{t.label}</Text>
@@ -451,7 +451,7 @@ function AccountStep({ onSelect }: { onSelect: (a: OwnAccount) => void }) {
                     : "trending-up-outline"
               }
               size={20}
-              color="#7C3AED"
+              color="#C8911A"
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -553,7 +553,7 @@ function AmountStep({
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       {recipientName ? (
         <View style={styles.recipientChip}>
-          <Ionicons name="person-circle-outline" size={18} color="#7C3AED" />
+          <Ionicons name="person-circle-outline" size={18} color="#C8911A" />
           <Text style={styles.recipientChipText} numberOfLines={1}>
             {recipientName}
           </Text>
@@ -594,7 +594,7 @@ function AmountStep({
 
       {scheduled ? (
         <View style={styles.scheduleHint}>
-          <Ionicons name="calendar-outline" size={14} color="#7C3AED" />
+          <Ionicons name="calendar-outline" size={14} color="#C8911A" />
           <Text style={styles.scheduleHintText}>You'll set the date on the next step</Text>
         </View>
       ) : null}
@@ -643,7 +643,7 @@ function ScheduleStep({
           display="inline"
           minimumDate={new Date()}
           onChange={(_, d) => d && onDate(d)}
-          accentColor="#7C3AED"
+          accentColor="#C8911A"
           themeVariant="light"
         />
       </View>
@@ -757,25 +757,25 @@ function FormField({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   content: { padding: 20, paddingBottom: 48 },
 
   // Scheduled toggle
   scheduledToggle: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 16,
     padding: 14,
     marginBottom: 24,
@@ -783,25 +783,25 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#F3F4F6",
   },
-  scheduledToggleOn: { borderColor: "#7C3AED", backgroundColor: "#F4F1FA" },
+  scheduledToggleOn: { borderColor: "#C8911A", backgroundColor: "#221D12" },
   scheduledToggleIcon: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
-  scheduledToggleIconOn: { backgroundColor: "#7C3AED" },
+  scheduledToggleIconOn: { backgroundColor: "#C8911A" },
   scheduledToggleLabel: {
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 2,
   },
-  scheduledToggleLabelOn: { color: "#7C3AED" },
-  scheduledToggleSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
-  scheduledToggleSubOn: { color: "#7C3AED" },
+  scheduledToggleLabelOn: { color: "#C8911A" },
+  scheduledToggleSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  scheduledToggleSubOn: { color: "#C8911A" },
   togglePill: {
     width: 42,
     height: 24,
@@ -810,23 +810,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 2,
   },
-  togglePillOn: { backgroundColor: "#7C3AED" },
+  togglePillOn: { backgroundColor: "#C8911A" },
   toggleThumb: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     alignSelf: "flex-start",
   },
   toggleThumbOn: { alignSelf: "flex-end" },
 
-  listLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#9CA3AF", marginBottom: 10 },
+  listLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B5E3C", marginBottom: 10 },
 
   // Transfer type cards
   typeCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
@@ -841,18 +841,18 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
-  typeLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 2 },
-  typeSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
+  typeLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 2 },
+  typeSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
 
   // Account cards
   accountCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
@@ -867,24 +867,24 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
   accountLabel: {
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 2,
   },
-  accountNumber: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
-  accountBalance: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  accountNumber: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  accountBalance: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
 
   // Contact picker
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     paddingHorizontal: 14,
     marginBottom: 20,
@@ -893,11 +893,11 @@ const styles = StyleSheet.create({
     height: 48,
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#1A1426" },
+  searchInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#EDE0B0" },
   contactRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
@@ -916,8 +916,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   avatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 14 },
-  contactName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 2 },
-  contactHandle: { fontSize: 13, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  contactName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 2 },
+  contactHandle: { fontSize: 13, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
 
   // Amount step
   recipientChip: {
@@ -925,14 +925,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     gap: 6,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
     marginBottom: 24,
     maxWidth: "80%",
   },
-  recipientChipText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#7C3AED" },
+  recipientChipText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#C8911A" },
   amountWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -942,14 +942,14 @@ const styles = StyleSheet.create({
   currencyPrefix: {
     fontSize: 28,
     fontFamily: "Inter_400Regular",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     marginRight: 8,
     marginTop: 6,
   },
   amountInput: {
     fontSize: 52,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     minWidth: 120,
     textAlign: "center",
   },
@@ -957,14 +957,14 @@ const styles = StyleSheet.create({
   quickChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 20,
   },
-  quickChipText: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
+  quickChipText: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
   noteWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
@@ -972,7 +972,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F3F4F6",
   },
-  noteInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#1A1426" },
+  noteInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#EDE0B0" },
   scheduleHint: {
     flexDirection: "row",
     alignItems: "center",
@@ -980,26 +980,26 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     paddingHorizontal: 2,
   },
-  scheduleHintText: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#7C3AED" },
+  scheduleHintText: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#C8911A" },
 
   // Form fields
   formField: { marginBottom: 16 },
   formLabel: {
     fontSize: 12,
     fontFamily: "Inter_500Medium",
-    color: "#6B7280",
+    color: "#8C7C55",
     marginBottom: 6,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   formInput: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     paddingHorizontal: 16,
     height: 50,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
-    color: "#1A1426",
+    color: "#EDE0B0",
     borderWidth: 1,
     borderColor: "#F3F4F6",
   },
@@ -1008,11 +1008,11 @@ const styles = StyleSheet.create({
   scheduleLabel: {
     fontSize: 13,
     fontFamily: "Inter_500Medium",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     marginBottom: 10,
   },
   datePickerWrap: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 16,
     marginBottom: 24,
     overflow: "hidden",
@@ -1022,17 +1022,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: "#2C2618",
   },
-  recurrenceChipOn: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
-  recurrenceText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#6B7280" },
+  recurrenceChipOn: { backgroundColor: "#C8911A", borderColor: "#C8911A" },
+  recurrenceText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#8C7C55" },
   recurrenceTextOn: { color: "white" },
 
   // CTA
   cta: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -1047,7 +1047,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
@@ -1055,19 +1055,19 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 28,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 8,
   },
   successAmount: {
     fontSize: 40,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#7C3AED",
+    color: "#C8911A",
     marginBottom: 4,
   },
-  successTo: { fontSize: 16, color: "#6B7280", fontFamily: "Inter_400Regular", marginBottom: 4 },
-  successDate: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 40 },
+  successTo: { fontSize: 16, color: "#8C7C55", fontFamily: "Inter_400Regular", marginBottom: 4 },
+  successDate: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginBottom: 40 },
   successDone: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 60,

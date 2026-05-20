@@ -73,7 +73,7 @@ export default function OnboardingScreen() {
           <>
             <TouchableOpacity style={styles.ctaWrap} onPress={advance} activeOpacity={0.85}>
               <LinearGradient
-                colors={["#7C3AED", "#EC4899"]}
+                colors={["#C8911A", "#D4A830"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.ctaGradient}
@@ -88,7 +88,7 @@ export default function OnboardingScreen() {
         ) : (
           <TouchableOpacity style={styles.ctaWrap} onPress={advance} activeOpacity={0.85}>
             <LinearGradient
-              colors={["#7C3AED", "#EC4899"]}
+              colors={["#C8911A", "#D4A830"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.ctaGradient}
@@ -115,7 +115,7 @@ function StepIdentity({
 }) {
   return (
     <View style={styles.stepWrap}>
-      <Ionicons name="shield-checkmark-outline" size={48} color="#7C3AED" style={styles.stepIcon} />
+      <Ionicons name="shield-checkmark-outline" size={48} color="#C8911A" style={styles.stepIcon} />
       <Text style={styles.stepTitle}>Verify your identity</Text>
       <Text style={styles.stepSubtitle}>
         We verify your ID to comply with Saudi regulations. Your information is encrypted and
@@ -156,7 +156,7 @@ function StepIdentity({
 function StepDocuments() {
   return (
     <View style={styles.stepWrap}>
-      <Ionicons name="card-outline" size={48} color="#7C3AED" style={styles.stepIcon} />
+      <Ionicons name="card-outline" size={48} color="#C8911A" style={styles.stepIcon} />
       <Text style={styles.stepTitle}>Upload your ID</Text>
       <Text style={styles.stepSubtitle}>
         Take a clear photo of both sides of your ID in a well-lit area.
@@ -176,7 +176,7 @@ function StepDone() {
   return (
     <View style={[styles.stepWrap, styles.stepDone]}>
       <LinearGradient
-        colors={["#7C3AED", "#EC4899"]}
+        colors={["#C8911A", "#D4A830"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.doneCircle}
@@ -193,7 +193,7 @@ function StepDone() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   progress: {
     flexDirection: "row",
     alignItems: "center",
@@ -201,32 +201,32 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   dot: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  dotActive: { backgroundColor: "#7C3AED" },
+  dotActive: { backgroundColor: "#C8911A" },
   dotInactive: { backgroundColor: "#E5E7EB" },
-  dotText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#9CA3AF" },
+  dotText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#6B5E3C" },
   dotTextActive: { color: "white" },
   line: { flex: 1, height: 2, marginHorizontal: 4 },
-  lineActive: { backgroundColor: "#7C3AED" },
+  lineActive: { backgroundColor: "#C8911A" },
   lineInactive: { backgroundColor: "#E5E7EB" },
   stepWrap: { flex: 1, paddingHorizontal: 24, paddingTop: 8 },
   stepIcon: { marginBottom: 20 },
   stepTitle: {
     fontSize: 24,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 10,
   },
   stepSubtitle: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "#6B7280",
+    color: "#8C7C55",
     lineHeight: 22,
     marginBottom: 28,
   },
   fieldLabel: {
     fontSize: 11,
     fontFamily: "Inter_500Medium",
-    color: "#6B7280",
+    color: "#8C7C55",
     textTransform: "uppercase",
     letterSpacing: 0.8,
     marginBottom: 10,
@@ -237,38 +237,38 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: "#2C2618",
   },
-  idTypeChipActive: { borderColor: "#7C3AED", backgroundColor: "#F4F1FA" },
-  idTypeText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#374151" },
-  idTypeTextActive: { color: "#7C3AED" },
+  idTypeChipActive: { borderColor: "#C8911A", backgroundColor: "#221D12" },
+  idTypeText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#A89B6E" },
+  idTypeTextActive: { color: "#C8911A" },
   idInput: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: "#2C2618",
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     fontFamily: "Inter_500Medium",
-    color: "#1A1426",
+    color: "#EDE0B0",
     letterSpacing: 2,
   },
   uploadBox: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: "#2C2618",
     borderStyle: "dashed",
     padding: 24,
     alignItems: "center",
     gap: 8,
     marginBottom: 12,
   },
-  uploadLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#374151" },
-  uploadHint: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  uploadLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#A89B6E" },
+  uploadHint: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
   stepDone: { alignItems: "center", justifyContent: "center" },
   doneCircle: {
     width: 100,
@@ -281,21 +281,21 @@ const styles = StyleSheet.create({
   doneTitle: {
     fontSize: 28,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 12,
     textAlign: "center",
   },
   doneSubtitle: {
     fontSize: 15,
     fontFamily: "Inter_400Regular",
-    color: "#6B7280",
+    color: "#8C7C55",
     lineHeight: 24,
     textAlign: "center",
   },
   footer: {
     paddingHorizontal: 24,
     paddingTop: 16,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderTopWidth: 1,
     borderTopColor: "#F3F4F6",
   },
@@ -303,5 +303,5 @@ const styles = StyleSheet.create({
   ctaGradient: { paddingVertical: 16, alignItems: "center" },
   ctaText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "white" },
   skipButton: { alignItems: "center", paddingVertical: 10 },
-  skipText: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  skipText: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
 });

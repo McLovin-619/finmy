@@ -162,7 +162,7 @@ export default function TopUpScreen() {
     >
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={goBack}>
-          <Ionicons name="chevron-back" size={24} color="#1A1426" />
+          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{headerTitle[step]}</Text>
         <View style={{ width: 24 }} />
@@ -179,7 +179,7 @@ export default function TopUpScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.methodIconWrap}>
-                <Ionicons name={m.icon} size={22} color="#7C3AED" />
+                <Ionicons name={m.icon} size={22} color="#C8911A" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.methodLabel}>{m.label}</Text>
@@ -287,7 +287,7 @@ export default function TopUpScreen() {
                         : "trending-up-outline"
                   }
                   size={20}
-                  color={selectedAccountId === acc.id ? "white" : "#7C3AED"}
+                  color={selectedAccountId === acc.id ? "white" : "#C8911A"}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -300,7 +300,7 @@ export default function TopUpScreen() {
                   <Ionicons
                     name="checkmark-circle"
                     size={18}
-                    color="#7C3AED"
+                    color="#C8911A"
                     style={{ marginTop: 4 }}
                   />
                 )}
@@ -329,7 +329,7 @@ export default function TopUpScreen() {
                     : "business-outline"
               }
               size={16}
-              color="#7C3AED"
+              color="#C8911A"
             />
             <Text style={styles.methodChipText}>{methodLabel}</Text>
           </View>
@@ -422,27 +422,27 @@ function FormField({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   content: { padding: 20, paddingBottom: 48 },
 
-  listLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#9CA3AF", marginBottom: 10 },
+  listLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B5E3C", marginBottom: 10 },
 
   // Method selection
   methodCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
@@ -457,12 +457,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
-  methodLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 2 },
-  methodSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
+  methodLabel: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 2 },
+  methodSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
   applePayBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -476,13 +476,13 @@ const styles = StyleSheet.create({
 
   // Card preview
   cardPreview: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
     minHeight: 140,
     justifyContent: "space-between",
-    shadowColor: "#7C3AED",
+    shadowColor: "#C8911A",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   accountCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
@@ -524,25 +524,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  accountCardSelected: { borderColor: "#7C3AED", backgroundColor: "#F4F1FA" },
+  accountCardSelected: { borderColor: "#C8911A", backgroundColor: "#221D12" },
   accountIconWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
-  accountIconWrapSelected: { backgroundColor: "#7C3AED" },
+  accountIconWrapSelected: { backgroundColor: "#C8911A" },
   accountLabel: {
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 2,
   },
-  accountNumber: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
+  accountNumber: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
   accountRight: { alignItems: "flex-end" },
-  accountBalance: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  accountBalance: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
 
   // Amount step
   methodChip: {
@@ -550,13 +550,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     alignSelf: "center",
     gap: 6,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 7,
     marginBottom: 24,
   },
-  methodChipText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#7C3AED" },
+  methodChipText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#C8911A" },
   amountWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -566,14 +566,14 @@ const styles = StyleSheet.create({
   currencyPrefix: {
     fontSize: 28,
     fontFamily: "Inter_400Regular",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     marginRight: 8,
     marginTop: 6,
   },
   amountInput: {
     fontSize: 52,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     minWidth: 120,
     textAlign: "center",
   },
@@ -581,36 +581,36 @@ const styles = StyleSheet.create({
   quickChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 20,
   },
-  quickChipText: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
+  quickChipText: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
 
   // Form fields
   formField: { marginBottom: 16 },
   formLabel: {
     fontSize: 12,
     fontFamily: "Inter_500Medium",
-    color: "#6B7280",
+    color: "#8C7C55",
     marginBottom: 6,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   formInput: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 14,
     paddingHorizontal: 16,
     height: 50,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
-    color: "#1A1426",
+    color: "#EDE0B0",
     borderWidth: 1,
     borderColor: "#F3F4F6",
   },
 
   // CTAs
   cta: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
@@ -644,18 +644,18 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 28,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 8,
   },
   successAmount: {
     fontSize: 40,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#7C3AED",
+    color: "#C8911A",
     marginBottom: 4,
   },
-  successVia: { fontSize: 16, color: "#6B7280", fontFamily: "Inter_400Regular", marginBottom: 40 },
+  successVia: { fontSize: 16, color: "#8C7C55", fontFamily: "Inter_400Regular", marginBottom: 40 },
   successDone: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 60,

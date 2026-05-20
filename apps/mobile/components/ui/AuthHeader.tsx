@@ -8,7 +8,7 @@ export function AuthHeader() {
 
   return (
     <LinearGradient
-      colors={["#7C3AED", "#C026D3", "#EC4899"]}
+      colors={["#1A1308", "#2A1C0C", "#C8911A"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={[styles.container, { paddingTop: insets.top + 36 }]}
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   logoF: {
     fontSize: 30,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#C8911A",
     lineHeight: 36,
   },
   logoDot: {
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#EC4899",
+    backgroundColor: "#D4A830",
   },
   wordmark: {
     color: "white",

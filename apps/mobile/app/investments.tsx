@@ -95,7 +95,7 @@ export default function InvestmentsScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#1A1426" />
+          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Auto-Investments</Text>
         <TouchableOpacity
@@ -103,13 +103,13 @@ export default function InvestmentsScreen() {
             Alert.alert("Settings", "Investment preference settings will be available soon.")
           }
         >
-          <Ionicons name="settings-outline" size={22} color="#1A1426" />
+          <Ionicons name="settings-outline" size={22} color="#EDE0B0" />
         </TouchableOpacity>
       </View>
 
       {/* Portfolio summary card */}
       <LinearGradient
-        colors={["#7C3AED", "#EC4899"]}
+        colors={["#C8911A", "#D4A830"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.portfolioCard}
@@ -173,7 +173,7 @@ export default function InvestmentsScreen() {
           </View>
         </View>
 
-        <AreaChart data={chartData} color="#7C3AED" />
+        <AreaChart data={chartData} color="#C8911A" />
 
         {/* X-axis labels */}
         <View style={styles.xLabels}>
@@ -231,7 +231,7 @@ export default function InvestmentsScreen() {
               </Text>
             </View>
             <TouchableOpacity style={styles.editBtn} onPress={() => setEditingSchedule(true)}>
-              <Ionicons name="pencil-outline" size={14} color="#7C3AED" />
+              <Ionicons name="pencil-outline" size={14} color="#C8911A" />
               <Text style={styles.editBtnText}>Edit</Text>
             </TouchableOpacity>
           </View>
@@ -253,7 +253,7 @@ export default function InvestmentsScreen() {
               value={!portfolio.paused}
               onValueChange={togglePause}
               trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
-              thumbColor={portfolio.paused ? "#9CA3AF" : "#7C3AED"}
+              thumbColor={portfolio.paused ? "#9CA3AF" : "#C8911A"}
             />
           </View>
         </View>
@@ -285,7 +285,7 @@ export default function InvestmentsScreen() {
           </View>
         ) : (
           <TouchableOpacity style={styles.editBtn} onPress={startEditAllocation}>
-            <Ionicons name="pencil-outline" size={14} color="#7C3AED" />
+            <Ionicons name="pencil-outline" size={14} color="#C8911A" />
             <Text style={styles.editBtnText}>Edit</Text>
           </TouchableOpacity>
         )}
@@ -357,7 +357,7 @@ export default function InvestmentsScreen() {
 
       {/* How it works */}
       <View style={styles.infoCard}>
-        <Ionicons name="information-circle-outline" size={18} color="#7C3AED" />
+        <Ionicons name="information-circle-outline" size={18} color="#C8911A" />
         <Text style={styles.infoText}>
           On the {portfolio.nextDeductionDay}th of each month, SAR {portfolio.monthlyDeductionSar}{" "}
           is deducted from your Main Account and distributed across your selected sectors. You can
@@ -422,7 +422,7 @@ function AreaChart({ data, color }: { data: PortfolioDataPoint[]; color: string 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
 
   header: {
     flexDirection: "row",
@@ -430,11 +430,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
 
   // Portfolio card
   portfolioCard: {
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   // Chart
   chartCard: {
     marginHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 20,
     paddingTop: 16,
     paddingBottom: 8,
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  chartRangeGain: { fontSize: 20, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  chartRangeGain: { fontSize: 20, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   chartRangePct: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#10B981", marginTop: 2 },
   chartRangePctNeg: { color: "#EF4444" },
   rangeRow: { flexDirection: "row", gap: 4 },
@@ -516,11 +516,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#1E1A10",
   },
-  rangeChipOn: { backgroundColor: "#F4F1FA" },
-  rangeText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#6B7280" },
-  rangeTextOn: { color: "#7C3AED" },
+  rangeChipOn: { backgroundColor: "#221D12" },
+  rangeText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#8C7C55" },
+  rangeTextOn: { color: "#C8911A" },
   chart: { alignSelf: "center" },
   xLabels: {
     flexDirection: "row",
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 8,
   },
-  xLabel: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  xLabel: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
 
   // Schedule
   sectionHeader: {
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   statusPill: {
     flexDirection: "row",
     alignItems: "center",
@@ -557,11 +557,11 @@ const styles = StyleSheet.create({
 
   scheduleCard: {
     marginHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 20,
     padding: 18,
     marginBottom: 24,
-    shadowColor: "#7C3AED",
+    shadowColor: "#C8911A",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -570,49 +570,49 @@ const styles = StyleSheet.create({
   scheduleTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   scheduleAmountLabel: {
     fontSize: 12,
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     fontFamily: "Inter_400Regular",
     marginBottom: 4,
   },
-  scheduleAmount: { fontSize: 26, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  scheduleAmount: { fontSize: 26, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   scheduleAmountWrap: {},
   editBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  editBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
+  editBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
   editRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   editInputWrap: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 46,
   },
-  editCurrency: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginRight: 6 },
-  editInput: { flex: 1, fontSize: 20, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
-  editSuffix: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  editCurrency: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginRight: 6 },
+  editInput: { flex: 1, fontSize: 20, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  editSuffix: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
   saveBtn: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#C8911A",
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
   saveBtnText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "white" },
-  scheduleDivider: { height: 1, backgroundColor: "#F3F4F6", marginVertical: 14 },
+  scheduleDivider: { height: 1, backgroundColor: "#1E1A10", marginVertical: 14 },
   scheduleMetaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   scheduleMeta: { flexDirection: "row", alignItems: "center", gap: 6, flex: 1 },
-  scheduleMetaLabel: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
-  scheduleMetaValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  scheduleMetaLabel: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  scheduleMetaValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
   pauseRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  pauseLabel: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#6B7280" },
+  pauseLabel: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#8C7C55" },
   pausedBanner: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
   // Sectors
   sectorsCard: {
     marginHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -654,14 +654,14 @@ const styles = StyleSheet.create({
   },
   sectorMid: { flex: 1 },
   sectorTitleRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
-  sectorName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  sectorName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
   sectorReturn: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#10B981" },
-  barTrack: { height: 5, backgroundColor: "#F3F4F6", borderRadius: 3, overflow: "hidden" },
+  barTrack: { height: 5, backgroundColor: "#1E1A10", borderRadius: 3, overflow: "hidden" },
   barFill: { height: 5, borderRadius: 3 },
   sectorRight: { alignItems: "flex-end", minWidth: 72 },
-  sectorPct: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
-  sectorValue: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginTop: 2 },
-  sectorDivider: { height: 1, backgroundColor: "#F9FAFB" },
+  sectorPct: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  sectorValue: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginTop: 2 },
+  sectorDivider: { height: 1, backgroundColor: "#1E1A10" },
 
   // Allocation editing
   allocEditActions: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -669,9 +669,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#1E1A10",
   },
-  allocCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#6B7280" },
+  allocCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#8C7C55" },
   allocTotalBanner: {
     marginHorizontal: 0,
     marginBottom: 4,
@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
   allocInputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -696,11 +696,11 @@ const styles = StyleSheet.create({
   allocInput: {
     fontSize: 18,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     minWidth: 32,
     textAlign: "right",
   },
-  allocInputPct: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#9CA3AF", marginLeft: 2 },
+  allocInputPct: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#6B5E3C", marginLeft: 2 },
 
   // Info
   infoCard: {
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 10,
     marginHorizontal: 20,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 14,
     padding: 14,
   },
@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    color: "#6B7280",
+    color: "#8C7C55",
     lineHeight: 20,
   },
 });

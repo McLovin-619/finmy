@@ -31,7 +31,7 @@ const NETWORK_DEFS: Record<
   mada: {
     displayName: "mada",
     benefit: "Saudi debit — accepted at all Mada-enabled merchants in KSA",
-    colors: ["#7C3AED", "#5B21B6"],
+    colors: ["#C8911A", "#5B21B6"],
   },
   visa: {
     displayName: "VISA",
@@ -90,11 +90,11 @@ export default function CardsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#1A1426" />
+          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Cards</Text>
         <TouchableOpacity style={styles.newCardBtn} onPress={() => setIssuing(true)}>
-          <Ionicons name="add" size={18} color="#7C3AED" />
+          <Ionicons name="add" size={18} color="#C8911A" />
           <Text style={styles.newCardBtnText}>New</Text>
         </TouchableOpacity>
       </View>
@@ -164,13 +164,13 @@ export default function CardsScreen() {
           <QuickAction
             icon={card.status === "frozen" ? "lock-open-outline" : "lock-closed-outline"}
             label={card.status === "frozen" ? "Unfreeze" : "Freeze"}
-            color={card.status === "frozen" ? "#10B981" : "#7C3AED"}
+            color={card.status === "frozen" ? "#10B981" : "#C8911A"}
             onPress={toggleFreeze}
           />
           <QuickAction
             icon="bar-chart-outline"
             label="Limits"
-            color="#7C3AED"
+            color="#C8911A"
             onPress={() =>
               Alert.alert(
                 "Spend Limits",
@@ -181,7 +181,7 @@ export default function CardsScreen() {
           <QuickAction
             icon="eye-outline"
             label="Show Number"
-            color="#7C3AED"
+            color="#C8911A"
             onPress={() =>
               Alert.alert(
                 "Card Number",
@@ -360,7 +360,7 @@ function SettingRow({
   return (
     <View style={[styles.settingRow, disabled && styles.settingRowDisabled]}>
       <View style={styles.settingIconWrap}>
-        <Ionicons name={icon} size={18} color={disabled ? "#D1D5DB" : "#7C3AED"} />
+        <Ionicons name={icon} size={18} color={disabled ? "#D1D5DB" : "#C8911A"} />
       </View>
       <View style={styles.settingMid}>
         <Text style={[styles.settingLabel, disabled && styles.settingLabelDisabled]}>{label}</Text>
@@ -371,7 +371,7 @@ function SettingRow({
         onValueChange={onToggle}
         disabled={disabled}
         trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
-        thumbColor={value && !disabled ? "#7C3AED" : "#9CA3AF"}
+        thumbColor={value && !disabled ? "#C8911A" : "#9CA3AF"}
       />
     </View>
   );
@@ -456,7 +456,7 @@ function IssueCardFlow({
       {/* Header */}
       <View style={issueStyles.header}>
         <TouchableOpacity onPress={goBack}>
-          <Ionicons name={step === "type" ? "close" : "chevron-back"} size={24} color="#1A1426" />
+          <Ionicons name={step === "type" ? "close" : "chevron-back"} size={24} color="#EDE0B0" />
         </TouchableOpacity>
         <Text style={issueStyles.headerTitle}>{stepTitle[step]}</Text>
         <View style={{ width: 24 }} />
@@ -517,7 +517,7 @@ function IssueCardFlow({
             activeOpacity={0.75}
           >
             <View style={issueStyles.formatIconWrap}>
-              <Ionicons name="phone-portrait-outline" size={26} color="#7C3AED" />
+              <Ionicons name="phone-portrait-outline" size={26} color="#C8911A" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={issueStyles.formatName}>Virtual</Text>
@@ -525,7 +525,7 @@ function IssueCardFlow({
                 Instant. Use immediately in Apple Pay, online, and apps.
               </Text>
             </View>
-            {format === "virtual" && <Ionicons name="checkmark-circle" size={22} color="#7C3AED" />}
+            {format === "virtual" && <Ionicons name="checkmark-circle" size={22} color="#C8911A" />}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -537,7 +537,7 @@ function IssueCardFlow({
             activeOpacity={0.75}
           >
             <View style={issueStyles.formatIconWrap}>
-              <Ionicons name="card-outline" size={26} color="#7C3AED" />
+              <Ionicons name="card-outline" size={26} color="#C8911A" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={issueStyles.formatName}>Physical</Text>
@@ -546,7 +546,7 @@ function IssueCardFlow({
               </Text>
             </View>
             {format === "physical" && (
-              <Ionicons name="checkmark-circle" size={22} color="#7C3AED" />
+              <Ionicons name="checkmark-circle" size={22} color="#C8911A" />
             )}
           </TouchableOpacity>
         </ScrollView>
@@ -634,7 +634,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 // ─── Styles: main screen ──────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
 
   header: {
     flexDirection: "row",
@@ -642,21 +642,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   newCardBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  newCardBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
+  newCardBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
 
   // Carousel
   carouselContent: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 8, gap: CARD_GAP },
@@ -727,12 +727,12 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#E5E7EB" },
-  dotActive: { width: 18, backgroundColor: "#7C3AED" },
+  dotActive: { width: 18, backgroundColor: "#C8911A" },
 
   // Spend
   spendCard: {
     marginHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -743,19 +743,19 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   spendTopRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
-  spendLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#374151" },
-  spendLimit: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  spendLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#A89B6E" },
+  spendLimit: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
   spendBarTrack: {
     height: 6,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#1E1A10",
     borderRadius: 3,
     overflow: "hidden",
     marginBottom: 8,
   },
   spendBarFill: { height: 6, borderRadius: 3 },
   spendBottomRow: { flexDirection: "row", justifyContent: "space-between" },
-  spentAmount: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
-  spendPct: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  spentAmount: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  spendPct: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
 
   // Quick actions
   quickActionsRow: {
@@ -772,12 +772,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  quickActionLabel: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#374151" },
+  quickActionLabel: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#A89B6E" },
 
   // Settings
   settingsCard: {
     marginHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 20,
     paddingHorizontal: 16,
     marginBottom: 16,
@@ -793,7 +793,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -801,12 +801,12 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 2,
   },
-  settingLabelDisabled: { color: "#9CA3AF" },
-  settingSub: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
-  settingDivider: { height: 1, backgroundColor: "#F9FAFB", marginLeft: 48 },
+  settingLabelDisabled: { color: "#6B5E3C" },
+  settingSub: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  settingDivider: { height: 1, backgroundColor: "#1E1A10", marginLeft: 48 },
 
   // Frozen banner
   frozenBanner: {
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 8,
     marginHorizontal: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#1E1A10",
     borderRadius: 12,
     padding: 12,
   },
@@ -822,7 +822,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    color: "#6B7280",
+    color: "#8C7C55",
     lineHeight: 18,
   },
 });
@@ -830,25 +830,25 @@ const styles = StyleSheet.create({
 // ─── Styles: issue flow ───────────────────────────────────────────────────────
 
 const issueStyles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   content: { padding: 20, paddingBottom: 48 },
 
   // Type step
   typeCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 16,
     marginBottom: 10,
     overflow: "hidden",
@@ -863,13 +863,13 @@ const issueStyles = StyleSheet.create({
   typeCardName: {
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     marginBottom: 3,
   },
   typeCardBenefit: {
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     lineHeight: 17,
   },
 
@@ -881,7 +881,7 @@ const issueStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 16,
     padding: 18,
     marginBottom: 10,
@@ -893,23 +893,23 @@ const issueStyles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  formatCardSelected: { borderColor: "#7C3AED", backgroundColor: "#F4F1FA" },
+  formatCardSelected: { borderColor: "#C8911A", backgroundColor: "#221D12" },
   formatIconWrap: {
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
-  formatName: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 4 },
-  formatSub: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#9CA3AF", lineHeight: 18 },
+  formatName: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 4 },
+  formatSub: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#6B5E3C", lineHeight: 18 },
 
   // Limit step
   limitHint: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "#6B7280",
+    color: "#8C7C55",
     marginBottom: 24,
     lineHeight: 20,
   },
@@ -922,14 +922,14 @@ const issueStyles = StyleSheet.create({
   limitCurrency: {
     fontSize: 28,
     fontFamily: "Inter_400Regular",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     marginRight: 8,
     marginTop: 8,
   },
   limitInput: {
     fontSize: 52,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
     minWidth: 100,
     textAlign: "center",
   },
@@ -943,17 +943,17 @@ const issueStyles = StyleSheet.create({
   quickLimitChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: "#E5E7EB",
+    borderColor: "#2C2618",
   },
-  quickLimitChipOn: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
-  quickLimitText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B7280" },
+  quickLimitChipOn: { backgroundColor: "#C8911A", borderColor: "#C8911A" },
+  quickLimitText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#8C7C55" },
   quickLimitTextOn: { color: "white" },
 
   // Summary
-  summaryCard: { backgroundColor: "white", borderRadius: 16, padding: 16, marginBottom: 24 },
+  summaryCard: { backgroundColor: "#1A1610", borderRadius: 16, padding: 16, marginBottom: 24 },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -961,11 +961,11 @@ const issueStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F9FAFB",
   },
-  summaryLabel: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
-  summaryValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  summaryLabel: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  summaryValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
 
   // CTA
-  cta: { backgroundColor: "#7C3AED", borderRadius: 16, paddingVertical: 16, alignItems: "center" },
+  cta: { backgroundColor: "#C8911A", borderRadius: 16, paddingVertical: 16, alignItems: "center" },
   ctaDisabled: { backgroundColor: "#E5E7EB" },
   ctaText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "white" },
 });

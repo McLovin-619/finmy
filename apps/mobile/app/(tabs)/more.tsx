@@ -31,12 +31,12 @@ export default function MoreScreen() {
       >
         <View style={styles.cardHeader}>
           <View style={styles.cardHeaderLeft}>
-            <Ionicons name="people-outline" size={18} color="#7C3AED" />
+            <Ionicons name="people-outline" size={18} color="#C8911A" />
             <Text style={styles.cardTitle}> Allowances</Text>
           </View>
           <View style={styles.seeAllRow}>
             <Text style={styles.seeAllText}>Manage</Text>
-            <Ionicons name="chevron-forward" size={14} color="#7C3AED" />
+            <Ionicons name="chevron-forward" size={14} color="#C8911A" />
           </View>
         </View>
 
@@ -47,7 +47,7 @@ export default function MoreScreen() {
               <View
                 style={[
                   styles.memberAvatar,
-                  { backgroundColor: member.status === "paused" ? "#E5E7EB" : member.color },
+                  { backgroundColor: member.status === "paused" ? "#2C2618" : member.color },
                 ]}
               >
                 <Text style={styles.memberInitial}>{member.initials[0]}</Text>
@@ -67,7 +67,7 @@ export default function MoreScreen() {
                 <Text
                   style={[
                     styles.memberAllowance,
-                    member.status === "paused" && { color: "#9CA3AF" },
+                    member.status === "paused" && { color: "#6B5E3C" },
                   ]}
                 >
                   SAR {member.amountSar.toLocaleString("en-SA")}
@@ -84,21 +84,21 @@ export default function MoreScreen() {
       {/* Quick tiles */}
       <View style={styles.tilesRow}>
         <TouchableOpacity style={styles.tile}>
-          <View style={[styles.tileIcon, { backgroundColor: "#ECFDF5" }]}>
+          <View style={[styles.tileIcon, { backgroundColor: "#0D1A11" }]}>
             <Ionicons name="send-outline" size={22} color="#10B981" />
           </View>
           <Text style={styles.tileName}>Send Money</Text>
           <Text style={styles.tileSubtitle}>Local & International</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tile} onPress={() => router.push("/loyalty" as any)}>
-          <View style={[styles.tileIcon, { backgroundColor: "#F4F1FA" }]}>
-            <Ionicons name="gift-outline" size={22} color="#7C3AED" />
+          <View style={[styles.tileIcon, { backgroundColor: "#221D12" }]}>
+            <Ionicons name="gift-outline" size={22} color="#C8911A" />
           </View>
           <Text style={styles.tileName}>Loyalty</Text>
           <Text style={styles.tileSubtitle}>SAR 142 cashback earned</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.tile} onPress={() => router.push("/reports" as any)}>
-          <View style={[styles.tileIcon, { backgroundColor: "#FFF7ED" }]}>
+          <View style={[styles.tileIcon, { backgroundColor: "#1A1208" }]}>
             <Ionicons name="bar-chart-outline" size={22} color="#F97316" />
           </View>
           <Text style={styles.tileName}>Reports</Text>
@@ -116,10 +116,10 @@ export default function MoreScreen() {
               onPress={() => item.route && router.push(item.route as any)}
             >
               <View style={styles.settingsIconWrap}>
-                <Ionicons name={item.icon} size={18} color="#7C3AED" />
+                <Ionicons name={item.icon} size={18} color="#C8911A" />
               </View>
               <Text style={styles.settingsLabel}>{item.label}</Text>
-              <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+              <Ionicons name="chevron-forward" size={16} color="#6B5E3C" />
             </TouchableOpacity>
           </View>
         ))}
@@ -139,18 +139,18 @@ export default function MoreScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   header: { paddingHorizontal: 20, paddingBottom: 20 },
-  headerTitle: { fontSize: 26, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  headerTitle: { fontSize: 26, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   card: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     marginHorizontal: 20,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 2,
   },
@@ -161,17 +161,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardHeaderLeft: { flexDirection: "row", alignItems: "center" },
-  cardTitle: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  cardTitle: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
   seeAllRow: { flexDirection: "row", alignItems: "center", gap: 2 },
-  seeAllText: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
+  seeAllText: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
   moreCount: {
     fontSize: 12,
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     fontFamily: "Inter_400Regular",
     textAlign: "center",
     marginTop: 8,
   },
-  divider: { height: 1, backgroundColor: "#F9FAFB", marginVertical: 4 },
+  divider: { height: 1, backgroundColor: "#1E1A10", marginVertical: 4 },
   memberRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, gap: 12 },
   memberAvatar: {
     width: 40,
@@ -182,28 +182,28 @@ const styles = StyleSheet.create({
   },
   memberInitial: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 15 },
   memberInfo: { flex: 1 },
-  memberName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 3 },
+  memberName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 3 },
   memberFreqRow: { flexDirection: "row", alignItems: "center" },
-  memberFreq: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  memberFreq: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
   memberRight: { alignItems: "flex-end", gap: 4 },
-  memberAllowance: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
+  memberAllowance: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
   editButton: {
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#2C2618",
   },
-  editText: { fontSize: 12, color: "#6B7280", fontFamily: "Inter_500Medium" },
+  editText: { fontSize: 12, color: "#8C7C55", fontFamily: "Inter_500Medium" },
   tilesRow: { flexDirection: "row", gap: 12, marginHorizontal: 20, marginBottom: 16 },
   tile: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 16,
     padding: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 2,
   },
@@ -215,17 +215,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 10,
   },
-  tileName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 3 },
-  tileSubtitle: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  tileName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 3 },
+  tileSubtitle: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
   settingsCard: {
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     marginHorizontal: 20,
     borderRadius: 16,
     paddingHorizontal: 16,
     marginBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 2,
   },
@@ -234,27 +234,27 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     alignItems: "center",
     justifyContent: "center",
   },
-  settingsLabel: { flex: 1, fontSize: 15, fontFamily: "Inter_500Medium", color: "#1A1426" },
+  settingsLabel: { flex: 1, fontSize: 15, fontFamily: "Inter_500Medium", color: "#EDE0B0" },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
   },
-  footerF: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#7C3AED" },
-  footerWord: { fontSize: 14, fontFamily: "PlusJakartaSans_600SemiBold", color: "#9CA3AF" },
+  footerF: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#C8911A" },
+  footerWord: { fontSize: 14, fontFamily: "PlusJakartaSans_600SemiBold", color: "#6B5E3C" },
   signOutButton: {
     marginHorizontal: 20,
     marginBottom: 40,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: "#2C2618",
     alignItems: "center",
   },
-  signOutText: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  signOutText: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
 });

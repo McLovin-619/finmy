@@ -37,14 +37,16 @@ Be the #1 comprehensive and trusted digital wallet in the Gulf by 2030 — the p
 - Assets Under Management (AUM) via auto-investment feature
 
 ## Identity
-- **Primary** `#7C3AED` (violet) — actions, links, brand
-- **Secondary** `#EC4899` (pink) — accents, highlights
-- **Accent** `#F0ABFC` (fuchsia) — gradient ends, used sparingly
-- **Surface** `#F4F1FA` (light) / `#1A1426` (dark) — neumorphic card base
-- **Background** `#FAFAFA` (light) / `#0F0B1A` (dark)
+- **Primary** `#C8911A` (warm amber) — actions, links, brand
+- **Secondary** `#D4A830` (golden amber) — gradient ends, highlights
+- **Accent** `#E8C86A` (soft gold) — used sparingly
+- **Surface** `#221D12` (elevated) / `#1A1610` (card) — dark warm surfaces
+- **Background** `#0D0B07` (near-black with warm tint)
+- **Text** `#EDE0B0` (warm cream) / `#8C7C55` (secondary) / `#6B5E3C` (muted)
+- **Border** `#2C2618` / **Divider** `#1E1A10`
 - **Headings**: Plus Jakarta Sans (600–700)
 - **Body / UI**: Inter (400–600)
-- **Visual style**: soft neumorphism — dual-shadow cards on tinted surface, 16–20px radius, subtle violet→pink gradient reserved for primary CTAs
+- **Visual style**: dark mode with warm amber accents — near-black backgrounds, dark warm surface cards, amber-gold CTAs and interactive elements. Eye-comforting: no harsh contrast, warm undertones throughout.
 - **Tone**: calm, trustworthy, plain-spoken. No exclamation marks in product copy. Numbers and money are always precise.
 
 ## Stack

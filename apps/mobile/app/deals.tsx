@@ -18,13 +18,13 @@ import { MOCK_DEALS, type Deal, type DealBenefitType } from "@/lib/mock-data";
 
 const BENEFIT_COLOR: Record<DealBenefitType, string> = {
   cashback: "#10B981",
-  fee_discount: "#7C3AED",
+  fee_discount: "#C8911A",
   bonus_points: "#F59E0B",
 };
 
 const BENEFIT_BG: Record<DealBenefitType, string> = {
   cashback: "#ECFDF5",
-  fee_discount: "#F4F1FA",
+  fee_discount: "#221D12",
   bonus_points: "#FFFBEB",
 };
 
@@ -68,7 +68,7 @@ function VerifyBanner({
   return (
     <View style={vStyles.root}>
       <LinearGradient
-        colors={isStudent ? ["#7C3AED", "#8B5CF6"] : ["#EC4899", "#F472B6"]}
+        colors={isStudent ? ["#C8911A", "#8B5CF6"] : ["#D4A830", "#F472B6"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={vStyles.grad}
@@ -142,13 +142,13 @@ const vStyles = StyleSheet.create({
   },
   submitBtn: {
     height: 46,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 18,
   },
-  submitText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
+  submitText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
 });
 
 // ─── Deal card ────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ function DealCard({ deal }: { deal: Deal }) {
     >
       {deal.highlighted && (
         <LinearGradient
-          colors={["#7C3AED", "#EC4899"]}
+          colors={["#C8911A", "#D4A830"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.highlightedBadge}
@@ -196,7 +196,7 @@ function DealCard({ deal }: { deal: Deal }) {
       </View>
 
       <View style={styles.dealFooter}>
-        <Ionicons name="calendar-outline" size={11} color="#9CA3AF" />
+        <Ionicons name="calendar-outline" size={11} color="#6B5E3C" />
         <Text style={styles.dealValid}>Valid until {deal.validUntil}</Text>
         <TouchableOpacity
           style={styles.dealActivateBtn}
@@ -205,7 +205,7 @@ function DealCard({ deal }: { deal: Deal }) {
           }
         >
           <Text style={styles.dealActivateText}>Activate</Text>
-          <Ionicons name="chevron-forward" size={11} color="#7C3AED" />
+          <Ionicons name="chevron-forward" size={11} color="#C8911A" />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -237,7 +237,7 @@ export default function DealsScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#1A1426" />
+          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Student & Corporate Deals</Text>
         <View style={{ width: 24 }} />
@@ -245,7 +245,7 @@ export default function DealsScreen() {
 
       {/* Hero blurb */}
       <View style={styles.heroBanner}>
-        <Ionicons name="gift-outline" size={20} color="#7C3AED" />
+        <Ionicons name="gift-outline" size={20} color="#C8911A" />
         <Text style={styles.heroText}>
           Exclusive cashback, fee discounts, and bonus points for verified students and employees of
           partner companies.
@@ -263,7 +263,7 @@ export default function DealsScreen() {
             <Ionicons
               name={t === "student" ? "school-outline" : "business-outline"}
               size={15}
-              color={activeTab === t ? "white" : "#6B7280"}
+              color={activeTab === t ? "white" : "#8C7C55"}
             />
             <Text style={[styles.tabText, activeTab === t && styles.tabTextActive]}>
               {t === "student" ? "Student" : "Corporate"}
@@ -303,7 +303,7 @@ export default function DealsScreen() {
 
       {/* Footer note */}
       <View style={styles.footerNote}>
-        <Ionicons name="information-circle-outline" size={14} color="#9CA3AF" />
+        <Ionicons name="information-circle-outline" size={14} color="#6B5E3C" />
         <Text style={styles.footerNoteText}>
           Deals are subject to verification and may change. Cashback is credited within 48 hours of
           a qualifying transaction.
@@ -316,7 +316,7 @@ export default function DealsScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#FAFAFA" },
+  root: { flex: 1, backgroundColor: "#0D0B07" },
   content: { paddingBottom: 48 },
 
   header: {
@@ -325,14 +325,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
   headerTitle: {
     fontSize: 16,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#1A1426",
+    color: "#EDE0B0",
   },
 
   heroBanner: {
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     gap: 10,
     marginHorizontal: 20,
     marginTop: 16,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 14,
     padding: 14,
     marginBottom: 16,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    color: "#374151",
+    color: "#A89B6E",
     lineHeight: 20,
   },
 
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   tabRow: {
     flexDirection: "row",
     marginHorizontal: 20,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: "#1E1A10",
     borderRadius: 14,
     padding: 4,
     gap: 4,
@@ -373,8 +373,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 11,
   },
-  tabActive: { backgroundColor: "#7C3AED" },
-  tabText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#6B7280" },
+  tabActive: { backgroundColor: "#C8911A" },
+  tabText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#8C7C55" },
   tabTextActive: { color: "white" },
 
   // Verified state
@@ -411,13 +411,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
-  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
+  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
 
   // Deal card
   dealCard: {
     marginHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: "#1A1610",
     borderRadius: 18,
     padding: 16,
     marginBottom: 12,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   dealCardHighlighted: {
     borderWidth: 1.5,
     borderColor: "#E9D5FF",
-    shadowColor: "#7C3AED",
+    shadowColor: "#C8911A",
     shadowOpacity: 0.08,
     shadowRadius: 8,
   },
@@ -460,9 +460,9 @@ const styles = StyleSheet.create({
   },
   dealInitials: { fontSize: 14, fontFamily: "PlusJakartaSans_700Bold", color: "white" },
   dealMid: { flex: 1 },
-  dealBrand: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#9CA3AF", marginBottom: 2 },
-  dealTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 3 },
-  dealDesc: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B7280", lineHeight: 17 },
+  dealBrand: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#6B5E3C", marginBottom: 2 },
+  dealTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 3 },
+  dealDesc: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#8C7C55", lineHeight: 17 },
   dealBenefitBadge: {
     borderRadius: 10,
     paddingHorizontal: 8,
@@ -479,24 +479,24 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#F9FAFB",
+    borderTopColor: "#1E1A10",
   },
   dealValid: {
     flex: 1,
     fontSize: 11,
     fontFamily: "Inter_400Regular",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
   },
   dealActivateBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  dealActivateText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
+  dealActivateText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
 
   footerNote: {
     flexDirection: "row",
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     fontFamily: "Inter_400Regular",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     lineHeight: 17,
   },
 });

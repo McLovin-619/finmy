@@ -28,7 +28,7 @@ export function Input({ label, error, containerStyle, isPassword, prefix, ...pro
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
         <TextInput
           style={[styles.input, prefix ? styles.inputWithPrefix : null]}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor="#5A5035"
           secureTextEntry={isPassword && !showPassword}
           autoCapitalize={isPassword ? "none" : props.autoCapitalize}
           autoCorrect={isPassword ? false : props.autoCorrect}
@@ -57,13 +57,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 11,
     fontFamily: "Inter_600SemiBold",
-    color: "#9CA3AF",
+    color: "#6B5E3C",
     letterSpacing: 0.8,
     textTransform: "uppercase",
     marginBottom: 8,
   },
   inputWrapper: {
-    backgroundColor: "#F4F1FA",
+    backgroundColor: "#221D12",
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 15,
-    color: "#1A1426",
+    color: "#EDE0B0",
     fontFamily: "Inter_400Regular",
   },
   inputWithPrefix: {
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   prefix: {
     paddingLeft: 16,
     fontSize: 15,
-    color: "#1A1426",
+    color: "#EDE0B0",
     fontFamily: "Inter_400Regular",
   },
   eyeButton: {
