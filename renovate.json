@@ -1,0 +1,35 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "minimumReleaseAge": "10080 minutes",
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "description": "Auto-merge patches after CI passes"
+    },
+    {
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false,
+      "description": "Minors and majors require manual review"
+    },
+    {
+      "matchPackagePatterns": ["^expo", "^react-native", "^@react-native"],
+      "automerge": false,
+      "minimumReleaseAge": "30 days",
+      "description": "Expo/RN packages need compatibility verification before updating"
+    },
+    {
+      "matchPackageNames": ["better-auth"],
+      "automerge": false,
+      "description": "better-auth is still v1 — review all updates manually"
+    },
+    {
+      "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
+      "groupName": "drizzle",
+      "automerge": false,
+      "description": "Keep drizzle-orm and drizzle-kit in sync"
+    }
+  ]
+}

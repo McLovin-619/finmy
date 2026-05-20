@@ -1,0 +1,4 @@
+{
+  "extends": "@finmy/config/tsconfig/base.json",
+  "include": ["."]
+}

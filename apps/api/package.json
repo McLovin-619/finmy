@@ -1,0 +1,30 @@
+{
+  "name": "finmy-api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup src/index.ts --format esm --dts --out-dir dist",
+    "check-types": "tsc --noEmit",
+    "lint": "biome check src/"
+  },
+  "dependencies": {
+    "@finmy/auth": "workspace:*",
+    "@finmy/db": "workspace:*",
+    "@finmy/lib": "workspace:^",
+    "@hono/node-server": "^1.14.0",
+    "@hono/zod-validator": "^0.5.0",
+    "@sentry/node": "^10.53.1",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.7.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@finmy/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.0",
+    "typescript": "~5.8.3"
+  }
+}
