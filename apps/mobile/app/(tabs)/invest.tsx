@@ -2,15 +2,54 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Defs, LinearGradient as SvgGradient, Path, Stop, Svg } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-client";
 import {
   MOCK_PORTFOLIO,
   MOCK_PORTFOLIO_HISTORY,
   MOCK_SECTORS,
   type PortfolioDataPoint,
 } from "@/lib/mock-data";
+
+// ─── API types ────────────────────────────────────────────────────────────────
+
+type InvestmentSchedule = {
+  id: string;
+  sector: string;
+  amountHalalas: number;
+  cadence: "monthly" | "quarterly";
+  nextExecutionDate: string;
+  status: "active" | "paused" | "cancelled";
+  createdAt: string;
+};
+
+type InvestmentsData = {
+  schedules: InvestmentSchedule[];
+  summary: { totalMonthlyHalalas: number; activeCount: number };
+};
+
+function useInvestments() {
+  return useQuery({
+    queryKey: ["investments"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/investments");
+      if (!res.ok) throw new Error("Failed to load investments");
+      return res.json() as Promise<InvestmentsData>;
+    },
+  });
+}
+
+function fmtSar(halalas: number) {
+  return (halalas / 100).toLocaleString("en-SA", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function fmtDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-SA", { day: "numeric", month: "short" });
+}
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -73,6 +112,13 @@ function AreaChart({ data, color }: { data: PortfolioDataPoint[]; color: string 
 export default function InvestScreen() {
   const insets = useSafeAreaInsets();
   const [range, setRange] = useState<Range>("1Y");
+  const { data: investData, isLoading: investLoading } = useInvestments();
+
+  const activeSchedules = investData?.schedules.filter((s) => s.status === "active") ?? [];
+  const monthlyHalalas = investData?.summary.totalMonthlyHalalas ?? 0;
+  const nextExec = activeSchedules[0]?.nextExecutionDate;
+  const isActive = (investData?.summary.activeCount ?? 0) > 0;
+  const hasSchedules = (investData?.schedules.length ?? 0) > 0;
 
   const chartData = MOCK_PORTFOLIO_HISTORY.slice(-RANGE_SLICE[range]);
   const rangeGain = chartData[chartData.length - 1].valueSar - chartData[0].valueSar;
@@ -184,24 +230,44 @@ export default function InvestScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.scheduleCard}>
-          <View style={styles.scheduleRow}>
-            <View style={styles.scheduleIconWrap}>
-              <Ionicons name="calendar-outline" size={18} color="#7C3AED" />
+          {investLoading ? (
+            <View style={styles.scheduleRow}>
+              <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-            <View style={styles.scheduleMid}>
-              <Text style={styles.scheduleLabel}>Monthly deduction</Text>
-              <Text style={styles.scheduleValue}>
-                SAR {MOCK_PORTFOLIO.monthlyDeductionSar} · {MOCK_PORTFOLIO.nextDeductionDay}th of
-                each month
-              </Text>
+          ) : !hasSchedules ? (
+            <TouchableOpacity
+              style={styles.scheduleRow}
+              onPress={() => router.push("/investments" as any)}
+            >
+              <View style={styles.scheduleIconWrap}>
+                <Ionicons name="add-circle-outline" size={18} color="#7C3AED" />
+              </View>
+              <View style={styles.scheduleMid}>
+                <Text style={styles.scheduleLabel}>No schedules yet</Text>
+                <Text style={styles.scheduleValue}>Tap to set up auto-invest</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.scheduleRow}>
+              <View style={styles.scheduleIconWrap}>
+                <Ionicons name="calendar-outline" size={18} color="#7C3AED" />
+              </View>
+              <View style={styles.scheduleMid}>
+                <Text style={styles.scheduleLabel}>Monthly deduction</Text>
+                <Text style={styles.scheduleValue}>
+                  SAR {fmtSar(monthlyHalalas)}
+                  {nextExec ? ` · Next ${fmtDate(nextExec)}` : ""}
+                </Text>
+              </View>
+              <View style={[styles.activePill, !isActive && styles.pausedPill]}>
+                <View style={[styles.activeDot, !isActive && styles.pausedDot]} />
+                <Text style={[styles.activeText, !isActive && styles.pausedText]}>
+                  {isActive ? "Active" : "Paused"}
+                </Text>
+              </View>
             </View>
-            <View style={[styles.activePill, MOCK_PORTFOLIO.paused && styles.pausedPill]}>
-              <View style={[styles.activeDot, MOCK_PORTFOLIO.paused && styles.pausedDot]} />
-              <Text style={[styles.activeText, MOCK_PORTFOLIO.paused && styles.pausedText]}>
-                {MOCK_PORTFOLIO.paused ? "Paused" : "Active"}
-              </Text>
-            </View>
-          </View>
+          )}
         </View>
 
         {/* Sector allocation */}

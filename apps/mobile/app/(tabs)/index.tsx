@@ -1,42 +1,109 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
-import { MOCK_BILLS, MOCK_SUBSCRIPTIONS } from "@/lib/mock-data";
+import { apiFetch } from "@/lib/api-client";
+
+// ─── API types ────────────────────────────────────────────────────────────────
+
+type ApiBill = {
+  id: string;
+  name: string;
+  category: string;
+  amountHalalas: number;
+  nextDueDate: string;
+  autoPay: boolean;
+  isActive: boolean;
+  provider: string | null;
+};
+
+type ApiSubscription = {
+  id: string;
+  name: string;
+  category: string;
+  amountHalalas: number;
+  cycle: "monthly" | "yearly";
+  nextBillingDate: string;
+  isActive: boolean;
+};
+
+type BillsData = { bills: ApiBill[] };
+type SubscriptionsData = {
+  subscriptions: ApiSubscription[];
+  summary: { activeCount: number; monthlyTotalHalalas: number };
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const BILL_CATEGORY_COLOR: Record<string, string> = {
+  rent: "#EC4899",
+  utilities: "#F59E0B",
+  bnpl: "#3B82F6",
+  telecom: "#8B5CF6",
+  insurance: "#EF4444",
+  other: "#9CA3AF",
+};
+
+const SUB_COLORS = ["#7C3AED","#EC4899","#3B82F6","#10B981","#F59E0B","#EF4444","#E50914","#1DB954","#FF9900"];
+
+function colorFromString(s: string): string {
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) hash = s.charCodeAt(i) + ((hash << 5) - hash);
+  return SUB_COLORS[Math.abs(hash) % SUB_COLORS.length]!;
+}
+
+function initials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  return words.length >= 2
+    ? (words[0]![0]! + words[1]![0]!).toUpperCase()
+    : name.slice(0, 2).toUpperCase();
+}
+
+function billAbbr(name: string): string {
+  return initials(name);
+}
+
+function daysUntil(iso: string): number {
+  const due = new Date(iso);
+  const now = new Date();
+  due.setHours(0, 0, 0, 0);
+  now.setHours(0, 0, 0, 0);
+  return Math.round((due.getTime() - now.getTime()) / 86_400_000);
+}
 
 // ─── Subscriptions summary ────────────────────────────────────────────────────
 
-function SubscriptionsSummary() {
-  const active = MOCK_SUBSCRIPTIONS.filter((s) => s.status === "active");
-  const monthlyTotal = active.reduce(
-    (sum, s) => sum + (s.cycle === "monthly" ? s.amountSar : s.amountSar / 12),
-    0
-  );
+function SubscriptionsSummary({ data }: { data: SubscriptionsData | undefined }) {
+  if (!data) return null;
+  const { summary, subscriptions } = data;
+  const active = subscriptions.filter((s) => s.isActive);
   const preview = active.slice(0, 3);
+  const monthlySar = (summary.monthlyTotalHalalas / 100).toFixed(2);
 
   return (
     <View style={subStyles.card}>
       <View style={subStyles.topRow}>
         <View>
           <Text style={subStyles.totalLabel}>Monthly total</Text>
-          <Text style={subStyles.totalAmount}>SAR {monthlyTotal.toFixed(2)}</Text>
+          <Text style={subStyles.totalAmount}>SAR {monthlySar}</Text>
         </View>
         <View style={subStyles.countBadge}>
-          <Text style={subStyles.countText}>{active.length} active</Text>
+          <Text style={subStyles.countText}>{summary.activeCount} active</Text>
         </View>
       </View>
       <View style={subStyles.previewRow}>
         {preview.map((s) => (
-          <View key={s.id} style={[subStyles.dot, { backgroundColor: s.color }]}>
-            <Text style={subStyles.dotText}>{s.initials}</Text>
+          <View key={s.id} style={[subStyles.dot, { backgroundColor: colorFromString(s.name) }]}>
+            <Text style={subStyles.dotText}>{initials(s.name)}</Text>
           </View>
         ))}
-        {active.length > 3 && (
+        {summary.activeCount > 3 && (
           <View style={[subStyles.dot, { backgroundColor: "#E5E7EB" }]}>
-            <Text style={[subStyles.dotText, { color: "#6B7280" }]}>+{active.length - 3}</Text>
+            <Text style={[subStyles.dotText, { color: "#6B7280" }]}>+{summary.activeCount - 3}</Text>
           </View>
         )}
       </View>
@@ -92,6 +159,39 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const user = state.status === "authenticated" ? state.user : null;
   const firstName = user?.name.split(" ")[0] ?? "there";
+  const [balanceHidden, setBalanceHidden] = useState(false);
+
+  const walletQuery = useQuery({
+    queryKey: ["wallet"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/wallet");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ wallet: { balanceSar: number } }>;
+    },
+  });
+  const balanceSar = walletQuery.data?.wallet.balanceSar ?? null;
+
+  const billsQuery = useQuery({
+    queryKey: ["bills"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/bills");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<BillsData>;
+    },
+  });
+
+  const subscriptionsQuery = useQuery({
+    queryKey: ["subscriptions"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/subscriptions");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<SubscriptionsData>;
+    },
+  });
+
+  const upcomingBills = (billsQuery.data?.bills ?? [])
+    .filter((b) => b.isActive)
+    .slice(0, 2);
 
   return (
     /**
@@ -146,14 +246,34 @@ export default function HomeScreen() {
         <View style={styles.balanceRow}>
           <View>
             <Text style={styles.balanceLabel}>Total Balance</Text>
-            <Text style={styles.balanceAmount}>
-              <Text style={styles.balanceCurrency}>SAR </Text>
-              45,230
-              <Text style={styles.balanceDecimals}>.00</Text>
-            </Text>
+            {balanceHidden ? (
+              <Text style={styles.balanceAmount}>
+                <Text style={styles.balanceCurrency}>SAR </Text>
+                ••••••
+              </Text>
+            ) : balanceSar === null ? (
+              <Text style={[styles.balanceAmount, { color: "rgba(255,255,255,0.5)" }]}>
+                <Text style={styles.balanceCurrency}>SAR </Text>—
+              </Text>
+            ) : (
+              <Text style={styles.balanceAmount}>
+                <Text style={styles.balanceCurrency}>SAR </Text>
+                {Math.floor(balanceSar).toLocaleString("en-SA")}
+                <Text style={styles.balanceDecimals}>
+                  .{String(Math.round((balanceSar % 1) * 100)).padStart(2, "0")}
+                </Text>
+              </Text>
+            )}
           </View>
-          <TouchableOpacity style={styles.eyeButton}>
-            <Ionicons name="eye-outline" size={20} color="rgba(255,255,255,0.8)" />
+          <TouchableOpacity
+            style={styles.eyeButton}
+            onPress={() => setBalanceHidden((v) => !v)}
+          >
+            <Ionicons
+              name={balanceHidden ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="rgba(255,255,255,0.8)"
+            />
           </TouchableOpacity>
         </View>
 
@@ -218,29 +338,33 @@ export default function HomeScreen() {
             <Text style={styles.sectionAction}>See all</Text>
           </TouchableOpacity>
         </View>
-        {MOCK_BILLS.filter((b) => b.status !== "paid")
-          .sort((a, b) => a.daysUntilDue - b.daysUntilDue)
-          .slice(0, 2)
-          .map((bill) => {
-            const isOverdue = bill.status === "overdue";
-            const dueSoon = bill.status === "due-soon";
+        {upcomingBills.length === 0 && !billsQuery.isLoading ? (
+          <View style={styles.billRow}>
+            <Text style={styles.billAmount}>No upcoming bills</Text>
+          </View>
+        ) : (
+          upcomingBills.map((bill) => {
+            const days = daysUntil(bill.nextDueDate);
+            const isOverdue = days < 0;
+            const dueSoon = days >= 0 && days <= 2;
             const dueLabel =
-              bill.daysUntilDue < 0
-                ? `Overdue ${Math.abs(bill.daysUntilDue)}d`
-                : bill.daysUntilDue === 1
+              days < 0
+                ? `Overdue ${Math.abs(days)}d`
+                : days === 1
                   ? "Due tomorrow"
-                  : bill.daysUntilDue === 0
+                  : days === 0
                     ? "Due today"
-                    : `Due in ${bill.daysUntilDue} days`;
+                    : `Due in ${days} days`;
+            const color = BILL_CATEGORY_COLOR[bill.category] ?? "#9CA3AF";
             return (
               <View key={bill.id} style={styles.billRow}>
-                <View style={[styles.billAvatar, { backgroundColor: bill.color }]}>
-                  <Text style={styles.billAvatarText}>{bill.abbr}</Text>
+                <View style={[styles.billAvatar, { backgroundColor: color }]}>
+                  <Text style={styles.billAvatarText}>{billAbbr(bill.name)}</Text>
                 </View>
                 <View style={styles.billInfo}>
                   <Text style={styles.billName}>{bill.name}</Text>
                   <Text style={styles.billAmount}>
-                    SAR {bill.amountSar.toLocaleString("en-SA")}
+                    SAR {(bill.amountHalalas / 100).toLocaleString("en-SA")}
                   </Text>
                 </View>
                 <View style={styles.billRight}>
@@ -258,7 +382,8 @@ export default function HomeScreen() {
                 </View>
               </View>
             );
-          })}
+          })
+        )}
 
         {/* Subscriptions */}
         <View style={styles.sectionHeader}>
@@ -267,7 +392,7 @@ export default function HomeScreen() {
             <Text style={styles.sectionAction}>See all</Text>
           </TouchableOpacity>
         </View>
-        <SubscriptionsSummary />
+        <SubscriptionsSummary data={subscriptionsQuery.data} />
 
         {/* Sign out (mock only) */}
         <TouchableOpacity style={styles.signOutButton} onPress={signOut}>

@@ -11,6 +11,7 @@ const env = createEnv(
   z.object({
     BETTER_AUTH_SECRET: z.string().min(32, "must be at least 32 characters"),
     BETTER_AUTH_URL: z.string().url("must be a valid URL"),
+    RESEND_API_KEY: z.string().optional(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     APPLE_CLIENT_ID: z.string().optional(),
@@ -54,6 +55,26 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
     minPasswordLength: 8,
+    sendResetPassword: async ({ user, token }) => {
+      const link = `finmy://reset-password?token=${encodeURIComponent(token)}`;
+      if (env.RESEND_API_KEY) {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: "finmy <no-reply@finmy.app>",
+            to: user.email,
+            subject: "Reset your finmy password",
+            html: `<p>Reset your finmy password by tapping the link below. This link expires in 1 hour.</p><p><a href="${link}">Reset password</a></p><p>If you did not request this, your account is safe — ignore this email.</p>`,
+          }),
+        });
+      } else {
+        console.log(`[auth] Password reset link for ${user.email}: ${link}`);
+      }
+    },
   },
 
   session: {

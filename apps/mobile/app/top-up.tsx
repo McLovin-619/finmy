@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,7 +14,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MOCK_OWN_ACCOUNTS } from "@/lib/mock-data";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,9 +54,11 @@ const QUICK_AMOUNTS = ["100", "250", "500", "1000"];
 
 export default function TopUpScreen() {
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("method");
   const [method, setMethod] = useState<Method | null>(null);
   const [amount, setAmount] = useState("");
+  const [newBalanceSar, setNewBalanceSar] = useState<number | null>(null);
 
   // Card fields
   const [cardNumber, setCardNumber] = useState("");
@@ -61,8 +66,16 @@ export default function TopUpScreen() {
   const [cardCvv, setCardCvv] = useState("");
   const [cardName, setCardName] = useState("");
 
-  // Bank fields
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  // Bank account selection (mirrors wallet query)
+  const walletQuery = useQuery({
+    queryKey: ["wallet"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/wallet");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ wallet: { id: string; iban: string; balanceSar: number } }>;
+    },
+  });
+  const [bankAccountSelected, setBankAccountSelected] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -97,9 +110,24 @@ export default function TopUpScreen() {
 
   async function submit() {
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
-    setStep("success");
+    try {
+      const res = await apiFetch("/api/wallet/top-up", {
+        method: "POST",
+        body: JSON.stringify({ amountSar: parseFloat(amount) }),
+      });
+      const data = await res.json() as { newBalanceSar?: number; error?: string };
+      if (!res.ok) {
+        Alert.alert("Top-up failed", data.error ?? "Something went wrong");
+        return;
+      }
+      setNewBalanceSar(data.newBalanceSar ?? null);
+      queryClient.invalidateQueries({ queryKey: ["wallet"] });
+      setStep("success");
+    } catch {
+      Alert.alert("Top-up failed", "Could not connect. Check your connection.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const headerTitle: Record<Step, string> = {
@@ -126,18 +154,16 @@ export default function TopUpScreen() {
     cardCvv.length >= 3 &&
     cardName.trim().length > 0;
 
-  const bankValid = !!selectedAccountId;
+  const bankValid = bankAccountSelected;
 
   const amountValid = !!amount && parseFloat(amount) > 0;
-
-  const selectedAccount = MOCK_OWN_ACCOUNTS.find((a) => a.id === selectedAccountId);
 
   const methodLabel =
     method === "apple-pay"
       ? "Apple Pay"
       : method === "card"
         ? `•••• ${cardNumber.replace(/\s/g, "").slice(-4) || "Card"}`
-        : (selectedAccount?.label ?? "Bank");
+        : "Main Account";
 
   if (step === "success") {
     return (
@@ -148,6 +174,11 @@ export default function TopUpScreen() {
         <Text style={styles.successTitle}>Topped Up</Text>
         <Text style={styles.successAmount}>SAR {parseFloat(amount || "0").toFixed(2)}</Text>
         <Text style={styles.successVia}>via {methodLabel}</Text>
+        {newBalanceSar !== null ? (
+          <Text style={styles.successNewBalance}>
+            New balance: SAR {newBalanceSar.toFixed(2)}
+          </Text>
+        ) : null}
         <TouchableOpacity style={styles.successDone} onPress={() => router.back()}>
           <Text style={styles.successDoneText}>Done</Text>
         </TouchableOpacity>
@@ -262,41 +293,41 @@ export default function TopUpScreen() {
       {step === "details" && method === "bank" && (
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.listLabel}>Select source account</Text>
-          {MOCK_OWN_ACCOUNTS.map((acc) => (
+          {walletQuery.isLoading ? (
+            <ActivityIndicator color="#7C3AED" style={{ marginVertical: 24 }} />
+          ) : walletQuery.data ? (
             <TouchableOpacity
-              key={acc.id}
-              style={[
-                styles.accountCard,
-                selectedAccountId === acc.id && styles.accountCardSelected,
-              ]}
-              onPress={() => setSelectedAccountId(acc.id)}
+              style={[styles.accountCard, bankAccountSelected && styles.accountCardSelected]}
+              onPress={() => setBankAccountSelected(true)}
               activeOpacity={0.7}
             >
               <View
                 style={[
                   styles.accountIconWrap,
-                  selectedAccountId === acc.id && styles.accountIconWrapSelected,
+                  bankAccountSelected && styles.accountIconWrapSelected,
                 ]}
               >
                 <Ionicons
-                  name={
-                    acc.type === "main"
-                      ? "card-outline"
-                      : acc.type === "savings"
-                        ? "wallet-outline"
-                        : "trending-up-outline"
-                  }
+                  name="wallet-outline"
                   size={20}
-                  color={selectedAccountId === acc.id ? "white" : "#7C3AED"}
+                  color={bankAccountSelected ? "white" : "#7C3AED"}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.accountLabel}>{acc.label}</Text>
-                <Text style={styles.accountNumber}>{acc.number}</Text>
+                <Text style={styles.accountLabel}>Main Account</Text>
+                <Text style={styles.accountNumber}>
+                  •••• {walletQuery.data.wallet.iban.slice(-4)}
+                </Text>
               </View>
               <View style={styles.accountRight}>
-                <Text style={styles.accountBalance}>{acc.balance}</Text>
-                {selectedAccountId === acc.id && (
+                <Text style={styles.accountBalance}>
+                  SAR{" "}
+                  {walletQuery.data.wallet.balanceSar.toLocaleString("en-SA", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </Text>
+                {bankAccountSelected && (
                   <Ionicons
                     name="checkmark-circle"
                     size={18}
@@ -306,7 +337,7 @@ export default function TopUpScreen() {
                 )}
               </View>
             </TouchableOpacity>
-          ))}
+          ) : null}
           <TouchableOpacity
             style={[styles.cta, !bankValid && styles.ctaDisabled]}
             onPress={onDetailsNext}
@@ -653,7 +684,8 @@ const styles = StyleSheet.create({
     color: "#7C3AED",
     marginBottom: 4,
   },
-  successVia: { fontSize: 16, color: "#6B7280", fontFamily: "Inter_400Regular", marginBottom: 40 },
+  successVia: { fontSize: 16, color: "#6B7280", fontFamily: "Inter_400Regular", marginBottom: 16 },
+  successNewBalance: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 40 },
   successDone: {
     backgroundColor: "#7C3AED",
     borderRadius: 16,

@@ -1,139 +1,188 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import React from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { apiFetch } from "@/lib/api-client";
 
-type Transaction = {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type ApiTransaction = {
   id: string;
-  merchant: string;
-  abbr: string;
-  color: string;
-  category: string;
-  halala: number;
-  type: "credit" | "debit";
-  date: string;
+  type: string;
+  amountHalalas: number;
+  status: string;
+  description: string | null;
+  occurredAt: string;
+  isCredit: boolean;
 };
 
-const GROUPS: { label: string; items: Transaction[] }[] = [
-  {
-    label: "Today",
-    items: [
-      {
-        id: "t1",
-        merchant: "Carrefour",
-        abbr: "Ca",
-        color: "#3B82F6",
-        category: "Groceries",
-        halala: 12500,
-        type: "debit",
-        date: "18 May",
-      },
-      {
-        id: "t2",
-        merchant: "Salary",
-        abbr: "Sa",
-        color: "#10B981",
-        category: "Income",
-        halala: 850000,
-        type: "credit",
-        date: "18 May",
-      },
-    ],
-  },
-  {
-    label: "Yesterday",
-    items: [
-      {
-        id: "t3",
-        merchant: "Tamara",
-        abbr: "Tm",
-        color: "#6366F1",
-        category: "Shopping",
-        halala: 34000,
-        type: "debit",
-        date: "17 May",
-      },
-      {
-        id: "t4",
-        merchant: "Starbucks",
-        abbr: "St",
-        color: "#78350F",
-        category: "Dining",
-        halala: 3200,
-        type: "debit",
-        date: "17 May",
-      },
-    ],
-  },
-  {
-    label: "15 May",
-    items: [
-      {
-        id: "t5",
-        merchant: "Netflix",
-        abbr: "N",
-        color: "#EF4444",
-        category: "Subscription",
-        halala: 6500,
-        type: "debit",
-        date: "15 May",
-      },
-      {
-        id: "t6",
-        merchant: "Transfer from Khalid",
-        abbr: "Kh",
-        color: "#7C3AED",
-        category: "Transfer",
-        halala: 50000,
-        type: "credit",
-        date: "15 May",
-      },
-    ],
-  },
-];
+type TransactionsPage = {
+  transactions: ApiTransaction[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
 
-const FILTERS = ["All", "Income", "Expense"] as const;
-type Filter = (typeof FILTERS)[number];
+type ListItem =
+  | { kind: "header"; label: string }
+  | { kind: "tx"; tx: ApiTransaction; displayLabel: string; abbr: string; color: string; category: string };
 
-function fmt(halala: number) {
-  return (halala / 100).toLocaleString("en-SA", {
+// ─── Display metadata ─────────────────────────────────────────────────────────
+
+const TYPE_META: Record<string, { label: string; abbr: string; color: string; category: string }> = {
+  transfer_in:          { label: "Received",     abbr: "TR", color: "#10B981", category: "Transfer"   },
+  transfer_out:         { label: "Sent",          abbr: "TR", color: "#C8911A", category: "Transfer"   },
+  top_up:               { label: "Top Up",        abbr: "TU", color: "#10B981", category: "Top Up"     },
+  withdrawal:           { label: "Withdrawal",    abbr: "WD", color: "#EF4444", category: "Withdrawal" },
+  salary_payment:       { label: "Salary",        abbr: "SL", color: "#10B981", category: "Income"     },
+  bonus:                { label: "Bonus",         abbr: "BN", color: "#10B981", category: "Income"     },
+  allowance_payment:    { label: "Allowance",     abbr: "AL", color: "#F59E0B", category: "Transfer"   },
+  investment_deduction: { label: "Investment",    abbr: "IN", color: "#6366F1", category: "Investment" },
+  bill_payment:         { label: "Bill Payment",  abbr: "BP", color: "#EF4444", category: "Bills"      },
+  card_payment:         { label: "Card Payment",  abbr: "CP", color: "#374151", category: "Card"       },
+  deduction:            { label: "Deduction",     abbr: "DD", color: "#EF4444", category: "Other"      },
+};
+
+function getMeta(type: string) {
+  return TYPE_META[type] ?? { label: type, abbr: type.slice(0, 2).toUpperCase(), color: "#9CA3AF", category: "Other" };
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function getDateLabel(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const txMs = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diff = todayMs - txMs;
+  if (diff === 0) return "Today";
+  if (diff === 86_400_000) return "Yesterday";
+  return d.toLocaleDateString("en-SA", { day: "numeric", month: "short" });
+}
+
+function fmt(halalas: number) {
+  return (halalas / 100).toLocaleString("en-SA", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
+
+function buildListItems(txs: ApiTransaction[]): ListItem[] {
+  const items: ListItem[] = [];
+  let lastLabel = "";
+  for (const tx of txs) {
+    const label = getDateLabel(tx.occurredAt);
+    if (label !== lastLabel) {
+      items.push({ kind: "header", label });
+      lastLabel = label;
+    }
+    const meta = getMeta(tx.type);
+    items.push({ kind: "tx", tx, displayLabel: tx.description ?? meta.label, ...meta });
+  }
+  return items;
+}
+
+// ─── Filter config ────────────────────────────────────────────────────────────
+
+const FILTERS = ["All", "Income", "Expense"] as const;
+type Filter = (typeof FILTERS)[number];
+
+function toApiFilter(f: Filter): "all" | "income" | "expense" {
+  return f.toLowerCase() as "all" | "income" | "expense";
+}
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function TransactionsScreen() {
   const insets = useSafeAreaInsets();
   const [search, setSearch] = React.useState("");
   const [filter, setFilter] = React.useState<Filter>("All");
 
-  const filtered = GROUPS.map((g) => ({
-    ...g,
-    items: g.items.filter((t) => {
-      const matchFilter =
-        filter === "All" ||
-        (filter === "Income" && t.type === "credit") ||
-        (filter === "Expense" && t.type === "debit");
-      const matchSearch =
-        t.merchant.toLowerCase().includes(search.toLowerCase()) ||
-        t.category.toLowerCase().includes(search.toLowerCase());
-      return matchFilter && matchSearch;
-    }),
-  })).filter((g) => g.items.length > 0);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    refetch,
+    isRefetching,
+  } = useInfiniteQuery({
+    queryKey: ["transactions", filter],
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({ filter: toApiFilter(filter) });
+      if (pageParam) params.set("cursor", pageParam);
+      const res = await apiFetch(`/api/wallet/transactions?${params}`);
+      if (!res.ok) throw new Error("Failed to load transactions");
+      return res.json() as Promise<TransactionsPage>;
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  });
+
+  const allTxs = data?.pages.flatMap((p) => p.transactions) ?? [];
+  const filtered = allTxs.filter((t) => {
+    const meta = getMeta(t.type);
+    const label = t.description ?? meta.label;
+    return (
+      label.toLowerCase().includes(search.toLowerCase()) ||
+      meta.category.toLowerCase().includes(search.toLowerCase())
+    );
+  });
+  const listItems = buildListItems(filtered);
+
+  function renderItem({ item }: { item: ListItem }) {
+    if (item.kind === "header") {
+      return <Text style={styles.groupLabel}>{item.label}</Text>;
+    }
+    const { tx, displayLabel, abbr, color, category } = item;
+    return (
+      <TouchableOpacity
+        style={styles.txRow}
+        activeOpacity={0.7}
+        onPress={() => router.push({ pathname: "/transaction/[id]", params: { id: tx.id } } as any)}
+      >
+        <View style={[styles.txAvatar, { backgroundColor: color + "20" }]}>
+          <Text style={[styles.txAbbr, { color }]}>{abbr}</Text>
+        </View>
+        <View style={styles.txInfo}>
+          <Text style={styles.txMerchant} numberOfLines={1}>{displayLabel}</Text>
+          <Text style={styles.txCategory}>{category}</Text>
+        </View>
+        <View style={styles.txRight}>
+          <Text style={[styles.txAmount, tx.isCredit ? styles.txCredit : styles.txDebit]}>
+            {tx.isCredit ? "+" : "−"} SAR {fmt(tx.amountHalalas)}
+          </Text>
+          <Text style={styles.txDate}>
+            {new Date(tx.occurredAt).toLocaleTimeString("en-SA", { hour: "2-digit", minute: "2-digit" })}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerIconButton}>
           <Ionicons name="chevron-back" size={22} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Transactions</Text>
-        <TouchableOpacity style={styles.headerIconButton}>
-          <Ionicons name="options-outline" size={20} color="#374151" />
-        </TouchableOpacity>
+        <View style={styles.headerIconButton} />
       </View>
 
+      {/* Search */}
       <View style={styles.searchWrap}>
         <View style={styles.searchBar}>
           <Ionicons name="search-outline" size={18} color="#9CA3AF" />
@@ -152,6 +201,7 @@ export default function TransactionsScreen() {
         </View>
       </View>
 
+      {/* Filters */}
       <View style={styles.filtersRow}>
         {FILTERS.map((f) => (
           <TouchableOpacity
@@ -164,55 +214,59 @@ export default function TransactionsScreen() {
         ))}
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        {filtered.length === 0 ? (
-          <View style={styles.empty}>
-            <Ionicons name="receipt-outline" size={40} color="#D1D5DB" />
-            <Text style={styles.emptyText}>No transactions found</Text>
-          </View>
-        ) : (
-          filtered.map((group) => (
-            <View key={group.label}>
-              <Text style={styles.groupLabel}>{group.label}</Text>
-              {group.items.map((t) => (
-                <TouchableOpacity
-                  key={t.id}
-                  style={styles.txRow}
-                  activeOpacity={0.7}
-                  onPress={() =>
-                    router.push({ pathname: "/transaction/[id]", params: { id: t.id } } as any)
-                  }
-                >
-                  <View style={[styles.txAvatar, { backgroundColor: t.color + "20" }]}>
-                    <Text style={[styles.txAbbr, { color: t.color }]}>{t.abbr}</Text>
-                  </View>
-                  <View style={styles.txInfo}>
-                    <Text style={styles.txMerchant}>{t.merchant}</Text>
-                    <Text style={styles.txCategory}>{t.category}</Text>
-                  </View>
-                  <View style={styles.txRight}>
-                    <Text
-                      style={[
-                        styles.txAmount,
-                        t.type === "credit" ? styles.txCredit : styles.txDebit,
-                      ]}
-                    >
-                      {t.type === "credit" ? "+" : "−"} SAR {fmt(t.halala)}
-                    </Text>
-                    <Text style={styles.txDate}>{t.date}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+      {/* List */}
+      {isLoading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+        </View>
+      ) : isError ? (
+        <View style={styles.center}>
+          <Ionicons name="alert-circle-outline" size={40} color="#EF4444" />
+          <Text style={styles.errorText}>Failed to load transactions</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={listItems}
+          keyExtractor={(item) =>
+            item.kind === "header" ? `header-${item.label}` : item.tx.id
+          }
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.3}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching && !isFetchingNextPage}
+              onRefresh={() => refetch()}
+              tintColor="#7C3AED"
+            />
+          }
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={styles.footer}>
+                <ActivityIndicator size="small" color="#7C3AED" />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Ionicons name="receipt-outline" size={40} color="#D1D5DB" />
+              <Text style={styles.emptyText}>No transactions found</Text>
             </View>
-          ))
-        )}
-      </ScrollView>
+          }
+        />
+      )}
     </View>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#FAFAFA" },
@@ -225,13 +279,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
   },
   headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   headerIconButton: {
@@ -305,6 +352,16 @@ const styles = StyleSheet.create({
   txCredit: { color: "#10B981" },
   txDebit: { color: "#1A1426" },
   txDate: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  errorText: { fontSize: 14, color: "#EF4444", fontFamily: "Inter_400Regular" },
+  retryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    backgroundColor: "#7C3AED",
+    borderRadius: 20,
+  },
+  retryText: { fontSize: 14, color: "white", fontFamily: "Inter_600SemiBold" },
   empty: { alignItems: "center", paddingTop: 80, gap: 12 },
   emptyText: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  footer: { paddingVertical: 20, alignItems: "center" },
 });

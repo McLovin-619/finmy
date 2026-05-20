@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { queryClient } from "@/lib/query-client";
+import { registerPushToken, syncPushTokenWithServer } from "@/lib/notifications";
 import "../global.css";
 
 if (process.env.EXPO_PUBLIC_SENTRY_DSN) {
@@ -45,6 +46,18 @@ function NavigationGuard({ children }: { children: React.ReactNode }) {
       router.replace(onboardingComplete ? "/" : ("/onboarding" as any));
     }
   }, [state, segments, rootNavState]);
+
+  useEffect(() => {
+    if (state.status !== "authenticated" || !rootNavState?.key) return;
+    (async () => {
+      try {
+        const token = await registerPushToken();
+        if (token) await syncPushTokenWithServer(token);
+      } catch {
+        // never block startup
+      }
+    })();
+  }, [state.status, rootNavState?.key]);
 
   return <>{children}</>;
 }

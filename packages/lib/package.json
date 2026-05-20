@@ -6,6 +6,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1050.0",
+    "@aws-sdk/s3-request-presigner": "^3.1050.0",
+    "plaid": "^42.2.0",
+    "resend": "^6.12.3",
     "zod": "^3.23.0"
   },
   "devDependencies": {

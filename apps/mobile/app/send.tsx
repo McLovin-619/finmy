@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,7 +15,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MOCK_CONTACTS, MOCK_OWN_ACCOUNTS, type Contact, type OwnAccount } from "@/lib/mock-data";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MOCK_CONTACTS, type Contact } from "@/lib/mock-data";
+import { apiFetch } from "@/lib/api-client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,11 +25,27 @@ type TransferType = "local-bank" | "international" | "between-accounts" | "conta
 type Recurrence = "once" | "weekly" | "monthly" | "yearly";
 type Step = "type" | "recipient" | "amount" | "schedule" | "success";
 
+type FinmyUser = { id: string; name: string; email: string; initials: string; color: string };
+
+type WalletAccount = { id: string; label: string; number: string; balanceSar: number };
+
 type Recipient =
   | { kind: "contact"; contact: Contact }
-  | { kind: "account"; account: OwnAccount }
+  | { kind: "account"; account: WalletAccount }
   | { kind: "bank"; iban: string; name: string; bank: string }
-  | { kind: "international"; iban: string; swift: string; bank: string; country: string };
+  | { kind: "international"; iban: string; swift: string; bank: string; country: string }
+  | { kind: "finmy-user"; user: FinmyUser };
+
+function getRecipientName(recipient: Recipient | null, fallback = ""): string {
+  if (!recipient) return fallback;
+  switch (recipient.kind) {
+    case "contact": return recipient.contact.name;
+    case "finmy-user": return recipient.user.name;
+    case "account": return recipient.account.label;
+    case "bank": return recipient.name;
+    case "international": return recipient.iban;
+  }
+}
 
 const TRANSFER_TYPES: {
   type: TransferType;
@@ -76,6 +96,7 @@ const RECURRENCES: { value: Recurrence; label: string }[] = [
 
 export default function SendScreen() {
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("type");
   const [transferType, setTransferType] = useState<TransferType | null>(null);
   const [scheduled, setScheduled] = useState(false);
@@ -85,6 +106,7 @@ export default function SendScreen() {
   const [scheduleDate, setScheduleDate] = useState(new Date(Date.now() + 86400000));
   const [recurrence, setRecurrence] = useState<Recurrence>("once");
   const [loading, setLoading] = useState(false);
+  const [newBalanceSar, setNewBalanceSar] = useState<number | null>(null);
 
   // Local bank form
   const [iban, setIban] = useState("");
@@ -136,9 +158,37 @@ export default function SendScreen() {
   }
 
   async function submit() {
+    if (transferType === "finmy" && recipient?.kind === "finmy-user") {
+      setLoading(true);
+      try {
+        const res = await apiFetch("/api/wallet/send", {
+          method: "POST",
+          body: JSON.stringify({
+            toEmail: recipient.user.email,
+            amountSar: parseFloat(amount),
+            ...(note ? { description: note } : {}),
+          }),
+        });
+        const data = await res.json() as { newBalanceSar?: number; error?: string };
+        if (!res.ok) {
+          Alert.alert("Transfer failed", data.error ?? "Something went wrong");
+          return;
+        }
+        setNewBalanceSar(data.newBalanceSar ?? null);
+        queryClient.invalidateQueries({ queryKey: ["wallet"] });
+        setStep("success");
+      } catch {
+        Alert.alert("Transfer failed", "Could not connect. Check your connection.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    // Non-finmy transfer types (bank, international, contacts) — mock flow until real integrations land
     setLoading(true);
     await new Promise((r) => setTimeout(r, 900));
     setLoading(false);
+    queryClient.invalidateQueries({ queryKey: ["wallet"] });
     setStep("success");
   }
 
@@ -157,6 +207,7 @@ export default function SendScreen() {
         recipient={recipient}
         scheduled={scheduled}
         scheduleDate={scheduleDate}
+        newBalanceSar={newBalanceSar}
       />
     );
 
@@ -218,14 +269,22 @@ export default function SendScreen() {
           }}
         />
       )}
-      {step === "recipient" && (transferType === "contacts" || transferType === "finmy") && (
+      {step === "recipient" && transferType === "contacts" && (
         <ContactStep
           search={search}
           onSearch={setSearch}
           contacts={filteredContacts}
-          label={transferType === "finmy" ? "finmy users" : "Recent"}
+          label="Recent"
           onSelect={(c) => {
             setRecipient({ kind: "contact", contact: c });
+            onRecipientNext();
+          }}
+        />
+      )}
+      {step === "recipient" && transferType === "finmy" && (
+        <FinmyContactStep
+          onSelect={(u) => {
+            setRecipient({ kind: "finmy-user", user: u });
             onRecipientNext();
           }}
         />
@@ -430,37 +489,48 @@ function InternationalStep({
 
 // ─── Step: Between accounts ───────────────────────────────────────────────────
 
-function AccountStep({ onSelect }: { onSelect: (a: OwnAccount) => void }) {
+function AccountStep({ onSelect }: { onSelect: (a: WalletAccount) => void }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["wallet"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/wallet");
+      if (!res.ok) throw new Error("Failed");
+      return res.json() as Promise<{ wallet: { id: string; iban: string; balanceSar: number } }>;
+    },
+  });
+
+  const account: WalletAccount | null = data
+    ? {
+        id: data.wallet.id,
+        label: "Main Account",
+        number: `•••• ${data.wallet.iban.slice(-4)}`,
+        balanceSar: data.wallet.balanceSar,
+      }
+    : null;
+
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.listLabel}>Your accounts</Text>
-      {MOCK_OWN_ACCOUNTS.map((acc) => (
+      {isLoading || !account ? (
+        <ActivityIndicator color="#7C3AED" style={{ marginTop: 24 }} />
+      ) : (
         <TouchableOpacity
-          key={acc.id}
           style={styles.accountCard}
-          onPress={() => onSelect(acc)}
+          onPress={() => onSelect(account)}
           activeOpacity={0.7}
         >
           <View style={styles.accountIconWrap}>
-            <Ionicons
-              name={
-                acc.type === "main"
-                  ? "card-outline"
-                  : acc.type === "savings"
-                    ? "wallet-outline"
-                    : "trending-up-outline"
-              }
-              size={20}
-              color="#7C3AED"
-            />
+            <Ionicons name="wallet-outline" size={20} color="#7C3AED" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.accountLabel}>{acc.label}</Text>
-            <Text style={styles.accountNumber}>{acc.number}</Text>
+            <Text style={styles.accountLabel}>{account.label}</Text>
+            <Text style={styles.accountNumber}>{account.number}</Text>
           </View>
-          <Text style={styles.accountBalance}>{acc.balance}</Text>
+          <Text style={styles.accountBalance}>
+            SAR {account.balanceSar.toLocaleString("en-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
         </TouchableOpacity>
-      ))}
+      )}
     </ScrollView>
   );
 }
@@ -536,17 +606,7 @@ function AmountStep({
   loading: boolean;
   onNext: () => void;
 }) {
-  const recipientName =
-    recipient?.kind === "contact"
-      ? recipient.contact.name
-      : recipient?.kind === "account"
-        ? recipient.account.label
-        : recipient?.kind === "bank"
-          ? recipient.name
-          : recipient?.kind === "international"
-            ? recipient.iban
-            : "";
-
+  const recipientName = getRecipientName(recipient);
   const valid = !!amount && parseFloat(amount) > 0;
 
   return (
@@ -684,22 +744,15 @@ function SuccessView({
   recipient,
   scheduled,
   scheduleDate,
+  newBalanceSar,
 }: {
   amount: string;
   recipient: Recipient | null;
   scheduled: boolean;
   scheduleDate: Date;
+  newBalanceSar: number | null;
 }) {
-  const recipientName =
-    recipient?.kind === "contact"
-      ? recipient.contact.name
-      : recipient?.kind === "account"
-        ? recipient.account.label
-        : recipient?.kind === "bank"
-          ? recipient.name
-          : recipient?.kind === "international"
-            ? recipient.iban
-            : "recipient";
+  const recipientName = getRecipientName(recipient, "recipient");
 
   const dateStr = scheduleDate.toLocaleDateString("en-SA", {
     day: "numeric",
@@ -716,10 +769,89 @@ function SuccessView({
       <Text style={styles.successAmount}>SAR {parseFloat(amount || "0").toFixed(2)}</Text>
       <Text style={styles.successTo}>to {recipientName}</Text>
       {scheduled ? <Text style={styles.successDate}>on {dateStr}</Text> : null}
+      {newBalanceSar !== null ? (
+        <Text style={styles.successNewBalance}>New balance: SAR {newBalanceSar.toFixed(2)}</Text>
+      ) : null}
       <TouchableOpacity style={styles.successDone} onPress={() => router.back()}>
         <Text style={styles.successDoneText}>Done</Text>
       </TouchableOpacity>
     </View>
+  );
+}
+
+// ─── Step: finmy user picker ──────────────────────────────────────────────────
+
+function FinmyContactStep({ onSelect }: { onSelect: (u: FinmyUser) => void }) {
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<FinmyUser[]>([]);
+  const [fetching, setFetching] = useState(false);
+
+  useEffect(() => {
+    const q = search.trim();
+    if (!q) {
+      setResults((prev) => (prev.length > 0 ? [] : prev));
+      return;
+    }
+    let cancelled = false;
+    setFetching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await apiFetch(`/api/users/search?q=${encodeURIComponent(q)}`);
+        if (!cancelled && res.ok) {
+          const data = await res.json() as { users: FinmyUser[] };
+          setResults(data.users);
+        }
+      } catch {
+        // transient network failure — leave last results visible
+      } finally {
+        if (!cancelled) setFetching(false);
+      }
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [search]);
+
+  return (
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <View style={styles.searchWrap}>
+        <Ionicons name="search-outline" size={16} color="#9CA3AF" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Name or email"
+          placeholderTextColor="#9CA3AF"
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+          autoFocus
+        />
+        {fetching ? <ActivityIndicator size="small" color="#7C3AED" /> : null}
+      </View>
+      <Text style={styles.listLabel}>finmy users</Text>
+      {!search.trim() ? (
+        <Text style={styles.finmyHint}>Type a name or email to search</Text>
+      ) : results.length === 0 && !fetching ? (
+        <Text style={styles.finmyHint}>No users found</Text>
+      ) : null}
+      {results.map((u) => (
+        <TouchableOpacity
+          key={u.id}
+          style={styles.contactRow}
+          onPress={() => onSelect(u)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.avatar, { backgroundColor: u.color }]}>
+            <Text style={styles.avatarText}>{u.initials}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.contactName}>{u.name}</Text>
+            <Text style={styles.contactHandle}>{u.email}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
   );
 }
 
@@ -1065,7 +1197,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   successTo: { fontSize: 16, color: "#6B7280", fontFamily: "Inter_400Regular", marginBottom: 4 },
-  successDate: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 40 },
+  successDate: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 8 },
+  successNewBalance: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 40 },
+  finmyHint: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular", textAlign: "center", marginTop: 24 },
   successDone: {
     backgroundColor: "#7C3AED",
     borderRadius: 16,

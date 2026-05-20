@@ -183,9 +183,11 @@ export default function SignInScreen() {
                 />
               )}
             />
-            <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={styles.forgotLink}>Forgot password?</Text>
-            </TouchableOpacity>
+            <Link href="/(auth)/forgot-password" asChild>
+              <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={styles.forgotLink}>Forgot password?</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
 
           <PrimaryButton

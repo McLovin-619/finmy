@@ -7,7 +7,17 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { z } from "zod";
+import { rateLimitMiddleware } from "./middleware/ratelimit";
+import { allowanceRoutes } from "./routes/allowances";
+import { billRoutes } from "./routes/bills";
+import { cardRoutes } from "./routes/cards";
+import { investmentRoutes } from "./routes/investments";
+import { loyaltyRoutes } from "./routes/loyalty";
+import { notificationRoutes } from "./routes/notifications";
+import { pushTokenRoutes } from "./routes/push-tokens";
 import { staffRoutes } from "./routes/staff";
+import { subscriptionRoutes } from "./routes/subscriptions";
+import { userRoutes } from "./routes/users";
 import { walletRoutes } from "./routes/wallet";
 
 // ─── Env ──────────────────────────────────────────────────────────────────────
@@ -18,6 +28,8 @@ const env = createEnv(
     PORT: z.coerce.number().int().min(1).max(65535).default(3001),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     SENTRY_DSN: z.string().url().optional(),
+    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
   }),
   "api",
 );
@@ -38,6 +50,7 @@ const app = new Hono().basePath("/api");
 
 app.use("*", logger());
 app.use("*", secureHeaders());
+app.use("*", rateLimitMiddleware(env.UPSTASH_REDIS_REST_URL, env.UPSTASH_REDIS_REST_TOKEN));
 app.use(
   "*",
   cors({
@@ -53,7 +66,16 @@ app.use(
 // Better Auth handles all /api/auth/** — basePath strips /api, so match /auth/**
 app.on(["GET", "POST"], "/auth/**", (c) => auth.handler(c.req.raw));
 
+app.route("/allowances", allowanceRoutes);
+app.route("/bills", billRoutes);
+app.route("/cards", cardRoutes);
+app.route("/investments", investmentRoutes);
+app.route("/loyalty", loyaltyRoutes);
+app.route("/notifications", notificationRoutes);
+app.route("/push-tokens", pushTokenRoutes);
 app.route("/staff", staffRoutes);
+app.route("/subscriptions", subscriptionRoutes);
+app.route("/users", userRoutes);
 app.route("/wallet", walletRoutes);
 
 app.get("/health", (c) => {

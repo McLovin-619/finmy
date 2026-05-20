@@ -2,93 +2,88 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MOCK_CARDS, MOCK_OWN_ACCOUNTS, type OwnAccount } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { MOCK_CARDS } from "@/lib/mock-data";
+import { apiFetch } from "@/lib/api-client";
+import { useWalletStream } from "@/lib/wallet-stream";
 
-// ─── Inline recent transactions (to avoid a separate mock export for now) ─────
+// ─── API types ────────────────────────────────────────────────────────────────
 
-const RECENT_TXS = [
-  {
-    id: "t1",
-    merchant: "Carrefour",
-    abbr: "Ca",
-    color: "#3B82F6",
-    category: "Groceries",
-    halala: 12_500,
-    type: "debit" as const,
-    date: "Today",
-  },
-  {
-    id: "t2",
-    merchant: "Salary",
-    abbr: "Sa",
-    color: "#10B981",
-    category: "Income",
-    halala: 850_000,
-    type: "credit" as const,
-    date: "Today",
-  },
-  {
-    id: "t3",
-    merchant: "Tamara",
-    abbr: "Tm",
-    color: "#6366F1",
-    category: "Shopping",
-    halala: 34_000,
-    type: "debit" as const,
-    date: "Yesterday",
-  },
-  {
-    id: "t4",
-    merchant: "Starbucks",
-    abbr: "St",
-    color: "#78350F",
-    category: "Dining",
-    halala: 3_200,
-    type: "debit" as const,
-    date: "Yesterday",
-  },
-  {
-    id: "t5",
-    merchant: "Transfer from Khalid",
-    abbr: "Kh",
-    color: "#7C3AED",
-    category: "Transfer",
-    halala: 50_000,
-    type: "credit" as const,
-    date: "15 May",
-  },
-];
+type WalletTx = {
+  id: string;
+  type: "transfer_in" | "transfer_out";
+  amountSar: number;
+  status: string;
+  description: string | null;
+  peerWalletId: string | null;
+  occurredAt: string;
+};
 
-function fmtHalala(h: number) {
-  return (h / 100).toLocaleString("en-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+type WalletData = {
+  wallet: { id: string; iban: string; balanceSar: number; currency: string };
+  transactions: WalletTx[];
+};
+
+// ─── Data fetching ────────────────────────────────────────────────────────────
+
+function useWallet() {
+  return useQuery({
+    queryKey: ["wallet"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/wallet");
+      if (!res.ok) throw new Error("Failed to load wallet");
+      return res.json() as Promise<WalletData>;
+    },
+  });
 }
 
-// ─── Account type config ──────────────────────────────────────────────────────
+// ─── Display helpers ──────────────────────────────────────────────────────────
 
-const ACCOUNT_ICON: Record<OwnAccount["type"], React.ComponentProps<typeof Ionicons>["name"]> = {
-  main: "wallet-outline",
-  savings: "save-outline",
-  investment: "trending-up-outline",
-};
+function fmtSar(sar: number) {
+  return sar.toLocaleString("en-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
-const ACCOUNT_COLOR: Record<OwnAccount["type"], string> = {
-  main: "#7C3AED",
-  savings: "#10B981",
-  investment: "#F59E0B",
-};
+function formatDate(raw: string) {
+  const d = new Date(raw);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return "Today";
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return d.toLocaleDateString("en-SA", { day: "numeric", month: "short" });
+}
+
+function txDisplayInfo(tx: WalletTx) {
+  const isCredit = tx.type === "transfer_in";
+  const label = tx.description ?? (isCredit ? "Transfer received" : "Transfer sent");
+  const words = label.trim().split(/\s+/);
+  const abbr =
+    words.length >= 2
+      ? (words[0]![0]! + words[1]![0]!).toUpperCase()
+      : label.slice(0, 2).toUpperCase();
+  return {
+    label,
+    abbr,
+    color: isCredit ? "#10B981" : "#7C3AED",
+    category: isCredit ? "Transfer In" : "Transfer Out",
+    isCredit,
+  };
+}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const [balanceHidden, setBalanceHidden] = useState(false);
+  const { data, isLoading, isError } = useWallet();
+  useWalletStream(!!data);
 
-  const totalSar = MOCK_OWN_ACCOUNTS.reduce((sum, a) => {
-    const val = parseFloat(a.balance.replace(/[^0-9.]/g, ""));
-    return sum + (isNaN(val) ? 0 : val);
-  }, 0);
+  const balanceSar = data?.wallet.balanceSar ?? 0;
+  const iban = data?.wallet.iban ?? "";
+  const ibanSuffix = iban.slice(-4);
+  const recentTxs = (data?.transactions ?? []).slice(0, 5);
 
   return (
     <ScrollView
@@ -118,9 +113,7 @@ export default function WalletScreen() {
         <View style={styles.balanceRow}>
           <Text style={styles.balanceAmount}>
             <Text style={styles.balanceCurrency}>SAR </Text>
-            {balanceHidden
-              ? "••••••"
-              : totalSar.toLocaleString("en-SA", { minimumFractionDigits: 2 })}
+            {balanceHidden ? "••••••" : isLoading ? "—" : fmtSar(balanceSar)}
           </Text>
           <TouchableOpacity style={styles.eyeBtn} onPress={() => setBalanceHidden((v) => !v)}>
             <Ionicons
@@ -160,27 +153,30 @@ export default function WalletScreen() {
           <Text style={styles.sectionTitle}>Accounts</Text>
         </View>
         <View style={styles.accountsCard}>
-          {MOCK_OWN_ACCOUNTS.map((acc, idx) => (
-            <View key={acc.id}>
-              <View style={styles.accountRow}>
-                <View
-                  style={[styles.accountIcon, { backgroundColor: ACCOUNT_COLOR[acc.type] + "18" }]}
-                >
-                  <Ionicons
-                    name={ACCOUNT_ICON[acc.type]}
-                    size={18}
-                    color={ACCOUNT_COLOR[acc.type]}
-                  />
-                </View>
-                <View style={styles.accountMid}>
-                  <Text style={styles.accountLabel}>{acc.label}</Text>
-                  <Text style={styles.accountNumber}>{acc.number}</Text>
-                </View>
-                <Text style={styles.accountBalance}>{balanceHidden ? "••••" : acc.balance}</Text>
-              </View>
-              {idx < MOCK_OWN_ACCOUNTS.length - 1 && <View style={styles.divider} />}
+          {isLoading ? (
+            <View style={styles.accountRow}>
+              <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-          ))}
+          ) : isError ? (
+            <View style={styles.accountRow}>
+              <Text style={styles.errorText}>Could not load account</Text>
+            </View>
+          ) : (
+            <View style={styles.accountRow}>
+              <View style={[styles.accountIcon, { backgroundColor: "#7C3AED18" }]}>
+                <Ionicons name="wallet-outline" size={18} color="#7C3AED" />
+              </View>
+              <View style={styles.accountMid}>
+                <Text style={styles.accountLabel}>Main Account</Text>
+                <Text style={styles.accountNumber}>
+                  {ibanSuffix ? `•••• ${ibanSuffix}` : "—"}
+                </Text>
+              </View>
+              <Text style={styles.accountBalance}>
+                {balanceHidden ? "••••" : `SAR ${fmtSar(balanceSar)}`}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Cards strip */}
@@ -241,40 +237,59 @@ export default function WalletScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.txCard}>
-          {RECENT_TXS.map((tx, idx) => (
-            <View key={tx.id}>
-              <TouchableOpacity
-                style={styles.txRow}
-                activeOpacity={0.7}
-                onPress={() =>
-                  router.push({
-                    pathname: "/transaction/[id]",
-                    params: { id: tx.id },
-                  } as any)
-                }
-              >
-                <View style={[styles.txAvatar, { backgroundColor: tx.color + "20" }]}>
-                  <Text style={[styles.txAbbr, { color: tx.color }]}>{tx.abbr}</Text>
-                </View>
-                <View style={styles.txMid}>
-                  <Text style={styles.txMerchant}>{tx.merchant}</Text>
-                  <Text style={styles.txCategory}>{tx.category}</Text>
-                </View>
-                <View style={styles.txRight}>
-                  <Text
-                    style={[
-                      styles.txAmount,
-                      tx.type === "credit" ? styles.txCredit : styles.txDebit,
-                    ]}
-                  >
-                    {tx.type === "credit" ? "+" : "−"} SAR {fmtHalala(tx.halala)}
-                  </Text>
-                  <Text style={styles.txDate}>{tx.date}</Text>
-                </View>
-              </TouchableOpacity>
-              {idx < RECENT_TXS.length - 1 && <View style={styles.txDivider} />}
+          {isLoading ? (
+            <View style={styles.txLoadingRow}>
+              <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-          ))}
+          ) : isError ? (
+            <View style={styles.txLoadingRow}>
+              <Text style={styles.errorText}>Could not load transactions</Text>
+            </View>
+          ) : recentTxs.length === 0 ? (
+            <View style={styles.txLoadingRow}>
+              <Text style={styles.emptyText}>No transactions yet</Text>
+            </View>
+          ) : (
+            recentTxs.map((tx, idx) => {
+              const info = txDisplayInfo(tx);
+              return (
+                <View key={tx.id}>
+                  <TouchableOpacity
+                    style={styles.txRow}
+                    activeOpacity={0.7}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/transaction/[id]",
+                        params: { id: tx.id },
+                      } as any)
+                    }
+                  >
+                    <View style={[styles.txAvatar, { backgroundColor: info.color + "20" }]}>
+                      <Text style={[styles.txAbbr, { color: info.color }]}>{info.abbr}</Text>
+                    </View>
+                    <View style={styles.txMid}>
+                      <Text style={styles.txMerchant} numberOfLines={1}>
+                        {info.label}
+                      </Text>
+                      <Text style={styles.txCategory}>{info.category}</Text>
+                    </View>
+                    <View style={styles.txRight}>
+                      <Text
+                        style={[
+                          styles.txAmount,
+                          info.isCredit ? styles.txCredit : styles.txDebit,
+                        ]}
+                      >
+                        {info.isCredit ? "+" : "−"} SAR {fmtSar(tx.amountSar)}
+                      </Text>
+                      <Text style={styles.txDate}>{formatDate(tx.occurredAt)}</Text>
+                    </View>
+                  </TouchableOpacity>
+                  {idx < recentTxs.length - 1 && <View style={styles.txDivider} />}
+                </View>
+              );
+            })
+          )}
         </View>
       </View>
     </ScrollView>
@@ -488,6 +503,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 1,
   },
+  txLoadingRow: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
   txRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -516,4 +535,6 @@ const styles = StyleSheet.create({
   txDebit: { color: "#1A1426" },
   txDate: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   txDivider: { height: 1, backgroundColor: "#F9FAFB" },
+  errorText: { fontSize: 13, color: "#EF4444", fontFamily: "Inter_400Regular" },
+  emptyText: { fontSize: 13, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 });
