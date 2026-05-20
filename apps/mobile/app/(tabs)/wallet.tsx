@@ -74,9 +74,9 @@ const ACCOUNT_ICON: Record<OwnAccount["type"], React.ComponentProps<typeof Ionic
 };
 
 const ACCOUNT_COLOR: Record<OwnAccount["type"], string> = {
-  main: "#C8911A",
+  main: "#7C3AED",
   savings: "#10B981",
-  investment: "#D4A830",
+  investment: "#F59E0B",
 };
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -98,7 +98,7 @@ export default function WalletScreen() {
     >
       {/* Full-bleed gradient header */}
       <LinearGradient
-        colors={["#1A1308", "#231B0C"]}
+        colors={["#7C3AED", "#EC4899"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.gradientHeader, { paddingTop: insets.top + 14 }]}
@@ -227,7 +227,7 @@ export default function WalletScreen() {
           {/* Issue new card */}
           <TouchableOpacity style={styles.addCardChip} onPress={() => router.push("/cards" as any)}>
             <View style={styles.addCardIcon}>
-              <Ionicons name="add" size={22} color="#C8911A" />
+              <Ionicons name="add" size={22} color="#7C3AED" />
             </View>
             <Text style={styles.addCardText}>New card</Text>
           </TouchableOpacity>
@@ -284,7 +284,7 @@ export default function WalletScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: "#1A1308" },
+  scroll: { flex: 1, backgroundColor: "#7C3AED" },
   scrollContent: { paddingBottom: 40 },
 
   // Header
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
 
   body: {
-    backgroundColor: "#0D0B07",
+    backgroundColor: "#FAFAFA",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     marginTop: -28,
@@ -361,20 +361,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  seeAll: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
-  divider: { height: 1, backgroundColor: "#1E1A10" },
+  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  seeAll: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
+  divider: { height: 1, backgroundColor: "#F9FAFB" },
 
   // Accounts
   accountsCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     paddingHorizontal: 16,
     marginBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 1,
   },
@@ -395,14 +395,14 @@ const styles = StyleSheet.create({
   accountLabel: {
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 2,
   },
-  accountNumber: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  accountNumber: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
   accountBalance: {
     fontSize: 15,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
   },
 
   // Cards strip
@@ -458,33 +458,33 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
   },
   addCardIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     alignItems: "center",
     justifyContent: "center",
   },
-  addCardText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#C8911A" },
+  addCardText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#7C3AED" },
 
   // Transactions
   txCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     paddingHorizontal: 16,
     marginBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 1,
   },
@@ -506,14 +506,14 @@ const styles = StyleSheet.create({
   txMerchant: {
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 2,
   },
-  txCategory: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  txCategory: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   txRight: { alignItems: "flex-end" },
   txAmount: { fontSize: 13, fontFamily: "Inter_600SemiBold", marginBottom: 2 },
   txCredit: { color: "#10B981" },
-  txDebit: { color: "#EDE0B0" },
-  txDate: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
-  txDivider: { height: 1, backgroundColor: "#1E1A10" },
+  txDebit: { color: "#1A1426" },
+  txDate: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  txDivider: { height: 1, backgroundColor: "#F9FAFB" },
 });

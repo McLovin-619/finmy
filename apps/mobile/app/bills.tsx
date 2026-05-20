@@ -88,7 +88,7 @@ export default function BillsScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
+          <Ionicons name="chevron-back" size={24} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Smart Bill Center</Text>
         <View style={{ width: 24 }} />
@@ -110,7 +110,7 @@ export default function BillsScreen() {
           </Text>
         </View>
         <View style={[styles.summaryCard, { flex: 1 }]}>
-          <Ionicons name="calendar-outline" size={18} color="#C8911A" />
+          <Ionicons name="calendar-outline" size={18} color="#7C3AED" />
           <Text style={styles.summaryCardLabel}>Due this week</Text>
           <Text style={styles.summaryCardAmount}>SAR {weekTotal.toLocaleString("en-SA")}</Text>
         </View>
@@ -191,7 +191,7 @@ export default function BillsScreen() {
         }
         activeOpacity={0.8}
       >
-        <Ionicons name="add" size={18} color="#C8911A" />
+        <Ionicons name="add" size={18} color="#7C3AED" />
         <Text style={styles.addButtonText}>Add bill</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -271,7 +271,7 @@ function BillRow({
                 value={bill.autoPay}
                 onValueChange={() => onToggleAutoPay(bill.id)}
                 trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
-                thumbColor={bill.autoPay ? "#C8911A" : "#9CA3AF"}
+                thumbColor={bill.autoPay ? "#7C3AED" : "#9CA3AF"}
                 style={styles.autoPaySwitch}
               />
             </View>
@@ -344,7 +344,7 @@ function BnplSection({ bills }: { bills: Bill[] }) {
       >
         {bnplBills.map((bill) => {
           const cfg = BNPL_CONFIG[bill.name] ?? {
-            color: "#C8911A",
+            color: "#7C3AED",
             buttonLabel: `Open ${bill.name}`,
             alertTitle: `Opening ${bill.name}`,
             alertBody: `Redirecting to ${bill.name} app…`,
@@ -429,7 +429,7 @@ function BnplSection({ bills }: { bills: Bill[] }) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
 
   header: {
     flexDirection: "row",
@@ -437,11 +437,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
 
   // Summary row
   summaryRow: {
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   summaryCard: {
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 14,
     gap: 4,
@@ -462,8 +462,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
-  summaryCardLabel: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
-  summaryCardAmount: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  summaryCardLabel: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
+  summaryCardAmount: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
   summaryCardAmountRed: { color: "#EF4444" },
 
   // Filters
@@ -475,14 +475,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
   },
-  filterChipOn: { backgroundColor: "#C8911A", borderColor: "#C8911A" },
+  filterChipOn: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
   filterChipOverdue: { backgroundColor: "#FEE2E2", borderColor: "#EF4444" },
   filterDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#EF4444" },
-  filterText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#8C7C55" },
+  filterText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B7280" },
   filterTextOn: { color: "white" },
   filterTextOverdue: { color: "#EF4444" },
   filterBadge: {
@@ -501,13 +501,13 @@ const styles = StyleSheet.create({
   // List
   listWrap: { paddingHorizontal: 20, gap: 10 },
   empty: { alignItems: "center", paddingVertical: 48, gap: 10 },
-  emptyText: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  emptyText: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 
   // Bill row
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 14,
     gap: 12,
@@ -533,62 +533,62 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   avatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 14 },
-  avatarTextPaid: { color: "#6B5E3C" },
+  avatarTextPaid: { color: "#9CA3AF" },
 
   rowMid: { flex: 1 },
   rowTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
-  rowName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
-  rowNamePaid: { color: "#6B5E3C" },
+  rowName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  rowNamePaid: { color: "#9CA3AF" },
   categoryBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  categoryBadgeText: { fontSize: 10, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  categoryBadgeText: { fontSize: 10, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
 
   installmentRow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 8 },
   installmentDot: { width: 10, height: 4, borderRadius: 2, backgroundColor: "#E5E7EB" },
-  installmentDotFilled: { backgroundColor: "#C8911A" },
+  installmentDotFilled: { backgroundColor: "#7C3AED" },
   installmentLabel: {
     fontSize: 11,
     fontFamily: "Inter_400Regular",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     marginLeft: 2,
   },
 
   rowBottomRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   dueBadge: {
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
   dueBadgeOverdue: { backgroundColor: "#FEE2E2" },
   dueBadgePaid: { backgroundColor: "#ECFDF5" },
-  dueText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#C8911A" },
+  dueText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#7C3AED" },
   dueTextOverdue: { color: "#EF4444" },
   dueTextPaid: { color: "#10B981" },
 
   autoPayRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  autoPayLabel: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  autoPayLabel: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   autoPaySwitch: { transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] },
 
   rowRight: { alignItems: "flex-end", gap: 8, paddingTop: 2 },
-  rowAmount: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  rowAmountPaid: { color: "#6B5E3C" },
+  rowAmount: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  rowAmountPaid: { color: "#9CA3AF" },
 
   payBtn: {
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   payBtnOverdue: { backgroundColor: "#EF4444" },
-  payBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
+  payBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
   payBtnTextOverdue: { color: "white" },
 
   paidBadge: { flexDirection: "row", alignItems: "center", gap: 3 },
@@ -605,22 +605,22 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
     borderStyle: "dashed",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
   },
-  addButtonText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
+  addButtonText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
 
   // BNPL section
   bnplWrap: { marginTop: 20 },
   bnplHeader: { paddingHorizontal: 20, marginBottom: 12, gap: 2 },
-  bnplHeaderTitle: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  bnplHeaderSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  bnplHeaderTitle: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  bnplHeaderSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
 
   bnplScroll: { paddingHorizontal: 20, gap: 12 },
   bnplCard: {
     width: 260,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 16,
     gap: 12,
@@ -641,11 +641,11 @@ const styles = StyleSheet.create({
   },
   bnplAvatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 14 },
   bnplCardTopText: { gap: 2 },
-  bnplBrandName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
-  bnplOutstanding: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#8C7C55" },
+  bnplBrandName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  bnplOutstanding: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B7280" },
 
   bnplDotRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  bnplNextInstalment: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#EDE0B0" },
+  bnplNextInstalment: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#1A1426" },
 
   bnplDeepLinkBtn: {
     flexDirection: "row",

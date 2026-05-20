@@ -4,7 +4,7 @@ import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useMockAuth } from "@/lib/mock-auth";
+import { useAuth } from "@/lib/auth";
 import { MOCK_BILLS, MOCK_SUBSCRIPTIONS } from "@/lib/mock-data";
 
 // ─── Subscriptions summary ────────────────────────────────────────────────────
@@ -35,8 +35,8 @@ function SubscriptionsSummary() {
           </View>
         ))}
         {active.length > 3 && (
-          <View style={[subStyles.dot, { backgroundColor: "#2C2618" }]}>
-            <Text style={[subStyles.dotText, { color: "#8C7C55" }]}>+{active.length - 3}</Text>
+          <View style={[subStyles.dot, { backgroundColor: "#E5E7EB" }]}>
+            <Text style={[subStyles.dotText, { color: "#6B7280" }]}>+{active.length - 3}</Text>
           </View>
         )}
       </View>
@@ -46,13 +46,13 @@ function SubscriptionsSummary() {
 
 const subStyles = StyleSheet.create({
   card: {
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
   },
@@ -62,15 +62,15 @@ const subStyles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 14,
   },
-  totalLabel: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginBottom: 2 },
-  totalAmount: { fontSize: 20, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  totalLabel: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 2 },
+  totalAmount: { fontSize: 20, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   countBadge: {
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  countText: { fontSize: 12, color: "#C8911A", fontFamily: "Inter_600SemiBold" },
+  countText: { fontSize: 12, color: "#7C3AED", fontFamily: "Inter_600SemiBold" },
   previewRow: { flexDirection: "row", gap: 8 },
   dot: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   dotText: { color: "white", fontSize: 11, fontFamily: "Inter_600SemiBold" },
@@ -88,10 +88,10 @@ const QUICK_ACTIONS = [
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
-  const { state, signOut } = useMockAuth();
+  const { state, signOut } = useAuth();
   const insets = useSafeAreaInsets();
   const user = state.status === "authenticated" ? state.user : null;
-  const firstName = user?.fullName.split(" ")[0] ?? "there";
+  const firstName = user?.name.split(" ")[0] ?? "there";
 
   return (
     /**
@@ -120,7 +120,7 @@ export default function HomeScreen() {
        * The eye icon is pinned to the right, also away from the island.
        */}
       <LinearGradient
-        colors={["#1A1308", "#221809", "#2B200C"]}
+        colors={["#7C3AED", "#A855F7", "#EC4899"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0.6 }}
         style={[styles.gradientHeader, { paddingTop: insets.top + 14 }]}
@@ -192,7 +192,7 @@ export default function HomeScreen() {
         <View style={styles.investCard}>
           <View style={styles.investCardLeft}>
             <View style={styles.investIcon}>
-              <Ionicons name="trending-up" size={16} color="#C8911A" />
+              <Ionicons name="trending-up" size={16} color="#7C3AED" />
             </View>
             <View>
               <Text style={styles.investLabel}>Current Growth</Text>
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
    */
   scroll: {
     flex: 1,
-    backgroundColor: "#1A1308",
+    backgroundColor: "#7C3AED",
   },
   scrollContent: {
     paddingBottom: 40,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   // marginTop: -28 slides the card up to overlap the gradient's bottom edge,
   // closing any sub-pixel gap between the two views.
   body: {
-    backgroundColor: "#0D0B07",
+    backgroundColor: "#FAFAFA",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     marginTop: -28,
@@ -402,21 +402,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  sectionAction: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
+  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  sectionAction: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
 
   // ── Investments card ───────────────────────────────────────────────────────
   investCard: {
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 16,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 24,
-    shadowColor: "#000",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
   },
@@ -425,40 +425,40 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     alignItems: "center",
     justifyContent: "center",
   },
   investLabel: {
     fontSize: 12,
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     fontFamily: "Inter_400Regular",
     marginBottom: 4,
   },
   investGrowthRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  investGrowth: { fontSize: 18, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  investGrowth: { fontSize: 18, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   investBadge: {
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  investBadgeText: { fontSize: 11, color: "#C8911A", fontFamily: "Inter_600SemiBold" },
+  investBadgeText: { fontSize: 11, color: "#7C3AED", fontFamily: "Inter_600SemiBold" },
   investCardRight: { alignItems: "flex-end" },
-  nextAutoLabel: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
-  nextAutoDate: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  nextAutoLabel: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  nextAutoDate: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
 
   // ── Bill rows ──────────────────────────────────────────────────────────────
   billRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
   },
@@ -472,18 +472,18 @@ const styles = StyleSheet.create({
   },
   billAvatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 14 },
   billInfo: { flex: 1 },
-  billName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 2 },
-  billAmount: { fontSize: 13, color: "#8C7C55", fontFamily: "Inter_400Regular" },
+  billName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 2 },
+  billAmount: { fontSize: 13, color: "#6B7280", fontFamily: "Inter_400Regular" },
   billRight: { alignItems: "flex-end", gap: 6 },
-  billDue: { fontSize: 11, color: "#8C7C55", fontFamily: "Inter_400Regular" },
-  billDueUrgent: { color: "#D4A830" },
+  billDue: { fontSize: 11, color: "#6B7280", fontFamily: "Inter_400Regular" },
+  billDueUrgent: { color: "#F59E0B" },
   payButton: {
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  payButtonText: { fontSize: 12, color: "#C8911A", fontFamily: "Inter_600SemiBold" },
+  payButtonText: { fontSize: 12, color: "#7C3AED", fontFamily: "Inter_600SemiBold" },
   payButtonOverdue: { backgroundColor: "#EF4444" },
   payButtonTextOverdue: { color: "white" },
 
@@ -493,8 +493,8 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
     alignItems: "center",
   },
-  signOutText: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  signOutText: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 });

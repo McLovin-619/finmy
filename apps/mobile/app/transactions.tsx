@@ -83,7 +83,7 @@ const GROUPS: { label: string; items: Transaction[] }[] = [
         id: "t6",
         merchant: "Transfer from Khalid",
         abbr: "Kh",
-        color: "#C8911A",
+        color: "#7C3AED",
         category: "Transfer",
         halala: 50000,
         type: "credit",
@@ -126,7 +126,7 @@ export default function TransactionsScreen() {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={22} color="#EDE0B0" />
+          <Ionicons name="chevron-back" size={22} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Transactions</Text>
         <TouchableOpacity style={styles.headerIconButton}>
@@ -215,14 +215,14 @@ export default function TransactionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   headerIconButton: {
     width: 36,
     height: 36,
@@ -241,33 +241,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  searchWrap: { paddingHorizontal: 20, paddingVertical: 12, backgroundColor: "#1A1610" },
+  searchWrap: { paddingHorizontal: 20, paddingVertical: 12, backgroundColor: "white" },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 8,
   },
-  searchInput: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular", color: "#EDE0B0" },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular", color: "#1A1426" },
   filtersRow: { flexDirection: "row", gap: 8, paddingHorizontal: 20, paddingVertical: 12 },
   chip: {
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 7,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
   },
-  chipActive: { backgroundColor: "#C8911A", borderColor: "#C8911A" },
-  chipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#A89B6E" },
+  chipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  chipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#374151" },
   chipTextActive: { color: "white" },
   groupLabel: {
     fontSize: 11,
     fontFamily: "Inter_500Medium",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   txRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     marginHorizontal: 20,
     borderRadius: 16,
     padding: 14,
@@ -298,13 +298,13 @@ const styles = StyleSheet.create({
   },
   txAbbr: { fontFamily: "Inter_600SemiBold", fontSize: 14 },
   txInfo: { flex: 1 },
-  txMerchant: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 3 },
-  txCategory: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  txMerchant: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 3 },
+  txCategory: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   txRight: { alignItems: "flex-end" },
   txAmount: { fontSize: 14, fontFamily: "Inter_600SemiBold", marginBottom: 3 },
   txCredit: { color: "#10B981" },
-  txDebit: { color: "#EDE0B0" },
-  txDate: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  txDebit: { color: "#1A1426" },
+  txDate: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   empty: { alignItems: "center", paddingTop: 80, gap: 12 },
-  emptyText: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  emptyText: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 });

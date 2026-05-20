@@ -68,13 +68,13 @@ const BENEFITS: BenefitDef[] = [
     icon: "trending-up-outline",
     label: "Exclusive investments",
     getValue: (t) => (t.exclusiveInvestments ? "Unlocked" : "Locked"),
-    color: "#C8911A",
+    color: "#7C3AED",
   },
   {
     icon: "headset-outline",
     label: "Dedicated support",
     getValue: (t) => (t.dedicatedSupport ? "Unlocked" : "Locked"),
-    color: "#D4A830",
+    color: "#EC4899",
   },
 ];
 
@@ -116,13 +116,13 @@ export default function LoyaltyScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
+          <Ionicons name="chevron-back" size={24} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Loyalty & Tiers</Text>
         <TouchableOpacity
           onPress={() => Alert.alert("Points History", "Full history coming soon.")}
         >
-          <Ionicons name="time-outline" size={22} color="#C8911A" />
+          <Ionicons name="time-outline" size={22} color="#7C3AED" />
         </TouchableOpacity>
       </View>
 
@@ -294,13 +294,13 @@ export default function LoyaltyScreen() {
           </View>
           <Ionicons name="arrow-forward" size={16} color="#9CA3AF" />
           <View style={styles.comparisonSide}>
-            <Text style={[styles.comparisonTierLabel, { color: "#C8911A" }]}>
+            <Text style={[styles.comparisonTierLabel, { color: "#7C3AED" }]}>
               {selectedTierName}
             </Text>
-            <Text style={[styles.comparisonValue, { color: "#C8911A" }]}>
+            <Text style={[styles.comparisonValue, { color: "#7C3AED" }]}>
               {selectedTier.cashbackPct}% cashback
             </Text>
-            <Text style={[styles.comparisonValue, { color: "#C8911A" }]}>
+            <Text style={[styles.comparisonValue, { color: "#7C3AED" }]}>
               {selectedTier.pointsMultiplier}× points
             </Text>
           </View>
@@ -314,7 +314,7 @@ export default function LoyaltyScreen() {
           <View key={method.label}>
             <View style={styles.earnRow}>
               <View style={styles.earnIconWrap}>
-                <Ionicons name={method.icon} size={18} color="#C8911A" />
+                <Ionicons name={method.icon} size={18} color="#7C3AED" />
               </View>
               <View style={styles.earnMid}>
                 <Text style={styles.earnLabel}>{method.label}</Text>
@@ -325,7 +325,7 @@ export default function LoyaltyScreen() {
           </View>
         ))}
         <View style={styles.multiplierNote}>
-          <Ionicons name="information-circle-outline" size={14} color="#C8911A" />
+          <Ionicons name="information-circle-outline" size={14} color="#7C3AED" />
           <Text style={styles.multiplierNoteText}>
             Your {currentTier.name} multiplier of {currentTier.pointsMultiplier}× applies to all
             card spend earnings.
@@ -366,7 +366,7 @@ export default function LoyaltyScreen() {
         activeOpacity={0.85}
       >
         <LinearGradient
-          colors={["#C8911A", "#D4A830"]}
+          colors={["#7C3AED", "#EC4899"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.redeemGradient}
@@ -383,7 +383,7 @@ export default function LoyaltyScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
 
   header: {
     flexDirection: "row",
@@ -391,11 +391,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
 
   // Hero card
   heroCard: {
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 6,
   },
-  heroProgressFill: { height: 6, backgroundColor: "#1A1610", borderRadius: 3 },
+  heroProgressFill: { height: 6, backgroundColor: "white", borderRadius: 3 },
   heroProgressPct: {
     fontSize: 11,
     color: "rgba(255,255,255,0.65)",
@@ -482,14 +482,14 @@ const styles = StyleSheet.create({
   tierNodeCircleSelected: {
     borderWidth: 3,
     borderColor: "white",
-    shadowColor: "#C8911A",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 6,
   },
-  tierNodeLabel: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#6B5E3C" },
-  tierNodeLabelCurrent: { color: "#EDE0B0", fontFamily: "Inter_600SemiBold" },
+  tierNodeLabel: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#9CA3AF" },
+  tierNodeLabelCurrent: { color: "#1A1426", fontFamily: "Inter_600SemiBold" },
   tierNodeLabelFuture: { color: "#D1D5DB" },
   tierNodeCurrentDot: {
     position: "absolute",
@@ -497,10 +497,10 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: "#C8911A",
+    backgroundColor: "#7C3AED",
   },
   tierConnector: { flex: 1, height: 2, backgroundColor: "#E5E7EB", marginBottom: 18 },
-  tierConnectorPast: { backgroundColor: "#C8911A" },
+  tierConnectorPast: { backgroundColor: "#7C3AED" },
 
   // Selected tier label
   selectedTierLabel: {
@@ -520,11 +520,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   selectedTierPillText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "white" },
-  selectedTierReq: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  selectedTierReq: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
 
   // Section headers
   sectionHeader: { paddingHorizontal: 20, marginBottom: 12 },
-  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   sectionTitleSpaced: { marginHorizontal: 20, marginTop: 8, marginBottom: 12 },
 
   // Benefits grid
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   },
   benefitCard: {
     width: "47%",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 14,
     shadowColor: "#000",
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     elevation: 1,
     position: "relative",
   },
-  benefitCardUpgrade: { backgroundColor: "#1E1A10" },
+  benefitCardUpgrade: { backgroundColor: "#F9FAFB" },
   benefitIcon: {
     width: 36,
     height: 36,
@@ -559,11 +559,11 @@ const styles = StyleSheet.create({
   benefitValue: {
     fontSize: 20,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 3,
   },
-  benefitValueUpgrade: { color: "#6B5E3C" },
-  benefitLabel: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#6B5E3C", lineHeight: 15 },
+  benefitValueUpgrade: { color: "#9CA3AF" },
+  benefitLabel: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9CA3AF", lineHeight: 15 },
   benefitLockBadge: {
     position: "absolute",
     top: 10,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginHorizontal: 20,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -592,15 +592,15 @@ const styles = StyleSheet.create({
   comparisonTierLabel: {
     fontSize: 12,
     fontFamily: "Inter_600SemiBold",
-    color: "#8C7C55",
+    color: "#6B7280",
     marginBottom: 4,
   },
-  comparisonValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#A89B6E" },
+  comparisonValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#374151" },
 
   // How to earn
   earnCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingTop: 4,
@@ -617,21 +617,21 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 1,
   },
   earnMid: { flex: 1 },
-  earnLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 2 },
-  earnDesc: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C", lineHeight: 17 },
-  earnDivider: { height: 1, backgroundColor: "#1E1A10", marginLeft: 48 },
+  earnLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 2 },
+  earnDesc: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF", lineHeight: 17 },
+  earnDivider: { height: 1, backgroundColor: "#F9FAFB", marginLeft: 48 },
   multiplierNote: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 7,
     marginTop: 8,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 10,
     padding: 10,
   },
@@ -639,14 +639,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    color: "#8C7C55",
+    color: "#6B7280",
     lineHeight: 17,
   },
 
   // Activity
   activityCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     paddingHorizontal: 16,
     marginBottom: 20,
@@ -659,10 +659,10 @@ const styles = StyleSheet.create({
   activityRow: { flexDirection: "row", alignItems: "center", paddingVertical: 13, gap: 12 },
   activityDot: { width: 8, height: 8, borderRadius: 4, marginTop: 2 },
   activityMid: { flex: 1 },
-  activityDesc: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#EDE0B0", marginBottom: 2 },
-  activityDate: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  activityDesc: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#1A1426", marginBottom: 2 },
+  activityDate: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
   activityPoints: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold" },
-  activityDivider: { height: 1, backgroundColor: "#1E1A10", marginLeft: 20 },
+  activityDivider: { height: 1, backgroundColor: "#F9FAFB", marginLeft: 20 },
 
   // Redeem CTA
   redeemBtn: { marginHorizontal: 20, borderRadius: 16, overflow: "hidden" },

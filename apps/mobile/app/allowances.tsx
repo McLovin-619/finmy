@@ -35,8 +35,8 @@ const RELATION_ICONS: Record<AllowanceRelation, keyof typeof Ionicons.glyphMap> 
 };
 
 const RELATION_COLORS: Record<AllowanceRelation, string> = {
-  Son: "#C8911A",
-  Daughter: "#D4A830",
+  Son: "#7C3AED",
+  Daughter: "#EC4899",
   Staff: "#10B981",
   Other: "#6B7280",
 };
@@ -123,11 +123,11 @@ export default function AllowancesScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
+          <Ionicons name="chevron-back" size={24} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Allowances</Text>
         <TouchableOpacity style={styles.addBtn} onPress={() => setAdding(true)}>
-          <Ionicons name="add" size={18} color="#C8911A" />
+          <Ionicons name="add" size={18} color="#7C3AED" />
           <Text style={styles.addBtnText}>Add</Text>
         </TouchableOpacity>
       </View>
@@ -177,7 +177,7 @@ export default function AllowancesScreen() {
 
         {/* Add CTA */}
         <TouchableOpacity style={styles.addDashedBtn} onPress={() => setAdding(true)}>
-          <Ionicons name="add" size={18} color="#C8911A" />
+          <Ionicons name="add" size={18} color="#7C3AED" />
           <Text style={styles.addDashedBtnText}>Add allowance</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -272,7 +272,7 @@ function AllowanceCard({
           value={!isPaused}
           onValueChange={onToggle}
           trackColor={{ false: "#E5E7EB", true: "#C4B5FD" }}
-          thumbColor={isPaused ? "#9CA3AF" : "#C8911A"}
+          thumbColor={isPaused ? "#9CA3AF" : "#7C3AED"}
           style={styles.toggle}
         />
       </View>
@@ -358,7 +358,7 @@ function AddAllowanceFlow({
     <View style={[addStyles.root, { paddingTop: insets.top + 8 }]}>
       <View style={addStyles.header}>
         <TouchableOpacity onPress={goBack}>
-          <Ionicons name={step === "who" ? "close" : "chevron-back"} size={24} color="#EDE0B0" />
+          <Ionicons name={step === "who" ? "close" : "chevron-back"} size={24} color="#1A1426" />
         </TouchableOpacity>
         <Text style={addStyles.headerTitle}>{stepTitle[step]}</Text>
         <View style={{ width: 24 }} />
@@ -576,50 +576,50 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
 // ─── Styles: main ─────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   addBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 3,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  addBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
+  addBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
   scrollContent: { padding: 20, paddingBottom: 48 },
 
   // Summary card
   summaryCard: {
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    shadowColor: "#C8911A",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 3,
   },
   summaryLeft: {},
-  summaryLabel: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginBottom: 4 },
-  summaryAmount: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#8C7C55" },
-  summaryAmountBig: { fontSize: 32, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  summarySub: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginTop: 4 },
+  summaryLabel: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 4 },
+  summaryAmount: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#6B7280" },
+  summaryAmountBig: { fontSize: 32, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  summarySub: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginTop: 4 },
   summaryRight: { alignItems: "flex-end", gap: 8 },
   avatarStack: { flexDirection: "row-reverse", height: 36, width: 80, position: "relative" },
   stackAvatar: {
@@ -633,14 +633,14 @@ const styles = StyleSheet.create({
     borderColor: "white",
   },
   stackAvatarText: { color: "white", fontSize: 11, fontFamily: "Inter_600SemiBold" },
-  autoLabel: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  autoLabel: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 
   // Empty state
   empty: { alignItems: "center", paddingVertical: 48, gap: 10 },
-  emptyTitle: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#A89B6E" },
+  emptyTitle: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#374151" },
   emptyText: {
     fontSize: 13,
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     fontFamily: "Inter_400Regular",
     textAlign: "center",
   },
@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 18,
     padding: 14,
     marginBottom: 10,
@@ -670,11 +670,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   avatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 14 },
-  avatarTextPaused: { color: "#6B5E3C" },
+  avatarTextPaused: { color: "#9CA3AF" },
   cardMid: { flex: 1 },
   cardTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 5 },
-  cardName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
-  cardNamePaused: { color: "#6B5E3C" },
+  cardName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  cardNamePaused: { color: "#9CA3AF" },
   relationBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -685,14 +685,14 @@ const styles = StyleSheet.create({
   },
   relationText: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
   cardMetaRow: { flexDirection: "row", alignItems: "center", gap: 5, marginBottom: 3 },
-  cardMeta: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  cardMeta: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   cardFooterRow: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6 },
-  totalSentText: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
-  monthlyEqText: { fontSize: 11, color: "#C8911A", fontFamily: "Inter_500Medium" },
+  totalSentText: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
+  monthlyEqText: { fontSize: 11, color: "#7C3AED", fontFamily: "Inter_500Medium" },
   cardRight: { alignItems: "flex-end", gap: 2, paddingTop: 2 },
-  cardAmount: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  cardAmountPaused: { color: "#6B5E3C" },
-  cardFreqLabel: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  cardAmount: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  cardAmountPaused: { color: "#9CA3AF" },
+  cardFreqLabel: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   toggle: { marginTop: 8, transform: [{ scaleX: 0.85 }, { scaleY: 0.85 }] },
 
   // Add dashed
@@ -705,46 +705,46 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
     borderStyle: "dashed",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
   },
-  addDashedBtnText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
+  addDashedBtnText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
 });
 
 // ─── Styles: add flow ─────────────────────────────────────────────────────────
 
 const addStyles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   content: { padding: 20, paddingBottom: 48 },
 
   fieldLabel: {
     fontSize: 11,
     fontFamily: "Inter_500Medium",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     letterSpacing: 0.6,
     marginBottom: 8,
     marginTop: 4,
   },
   input: {
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 14,
     paddingHorizontal: 16,
     height: 50,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
-    color: "#EDE0B0",
+    color: "#1A1426",
     borderWidth: 1,
     borderColor: "#F3F4F6",
     marginBottom: 20,
@@ -757,20 +757,20 @@ const addStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
   },
-  chipOn: { backgroundColor: "#C8911A", borderColor: "#C8911A" },
-  chipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#8C7C55" },
+  chipOn: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  chipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B7280" },
   chipTextOn: { color: "white" },
   dayChip: {
     paddingHorizontal: 10,
     paddingVertical: 9,
     borderRadius: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
   },
 
   // Amount
@@ -783,14 +783,14 @@ const addStyles = StyleSheet.create({
   amountCurrency: {
     fontSize: 26,
     fontFamily: "Inter_400Regular",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     marginRight: 8,
     marginTop: 8,
   },
   amountInput: {
     fontSize: 52,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     minWidth: 100,
     textAlign: "center",
   },
@@ -805,12 +805,12 @@ const addStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
   },
-  quickChipOn: { backgroundColor: "#C8911A", borderColor: "#C8911A" },
-  quickChipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#8C7C55" },
+  quickChipOn: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  quickChipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B7280" },
   quickChipTextOn: { color: "white" },
 
   // Recipient preview
@@ -818,7 +818,7 @@ const addStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 14,
     padding: 14,
     marginBottom: 24,
@@ -836,11 +836,11 @@ const addStyles = StyleSheet.create({
     justifyContent: "center",
   },
   previewAvatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 15 },
-  previewName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
-  previewHandle: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  previewName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  previewHandle: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 
   // Summary
-  summaryCard: { backgroundColor: "#1A1610", borderRadius: 16, padding: 16, marginBottom: 24 },
+  summaryCard: { backgroundColor: "white", borderRadius: 16, padding: 16, marginBottom: 24 },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -848,10 +848,10 @@ const addStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F9FAFB",
   },
-  summaryLabel: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
-  summaryValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  summaryLabel: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
+  summaryValue: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
 
-  cta: { backgroundColor: "#C8911A", borderRadius: 16, paddingVertical: 16, alignItems: "center" },
+  cta: { backgroundColor: "#7C3AED", borderRadius: 16, paddingVertical: 16, alignItems: "center" },
   ctaDisabled: { backgroundColor: "#E5E7EB" },
   ctaText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "white" },
 });

@@ -15,6 +15,13 @@
       "when": 1779283872904,
       "tag": "0001_charming_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779288320995,
+      "tag": "0002_minor_donald_blake",
+      "breakpoints": true
     }
   ]
 }

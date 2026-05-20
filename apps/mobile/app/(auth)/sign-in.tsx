@@ -128,7 +128,7 @@ export default function SignInScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.biometricIconWrap}>
-                <Ionicons name={biometricIcon as any} size={32} color="#C8911A" />
+                <Ionicons name={biometricIcon as any} size={32} color="#7C3AED" />
               </View>
               <Text style={styles.biometricLabel}>Sign in with {biometricLabel}</Text>
               <Text style={styles.biometricSub}>or fill in your details below</Text>
@@ -223,14 +223,14 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#1A1308",
+    backgroundColor: "#7C3AED",
   },
   keyboardView: {
     flex: 1,
   },
   card: {
     flex: 1,
-    backgroundColor: "#0D0B07",
+    backgroundColor: "white",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     marginTop: -28,
@@ -243,19 +243,19 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 28,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 8,
   },
   subheading: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "#8C7C55",
+    color: "#6B7280",
     lineHeight: 21,
     marginBottom: 28,
   },
   biometricCard: {
     alignItems: "center",
-    backgroundColor: "#1A1610",
+    backgroundColor: "#F4F1FA",
     borderRadius: 16,
     paddingVertical: 20,
     paddingHorizontal: 16,
@@ -265,26 +265,26 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#221D12",
+    backgroundColor: "white",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
-    shadowColor: "#C8911A",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 4,
   },
   biometricLabel: {
     fontSize: 15,
     fontFamily: "Inter_600SemiBold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 4,
   },
   biometricSub: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
   },
   fieldSpacing: {
     marginBottom: 16,
@@ -299,12 +299,12 @@ const styles = StyleSheet.create({
   rememberLabel: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "#A89B6E",
+    color: "#374151",
   },
   forgotLink: {
     fontSize: 14,
     fontFamily: "Inter_500Medium",
-    color: "#C8911A",
+    color: "#7C3AED",
   },
   ctaButton: {
     marginBottom: 24,
@@ -317,12 +317,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
   },
   dividerText: {
     marginHorizontal: 12,
     fontSize: 13,
-    color: "#5A5035",
+    color: "#9CA3AF",
     fontFamily: "Inter_400Regular",
   },
   socialRow: {
@@ -337,12 +337,12 @@ const styles = StyleSheet.create({
   },
   signUpPrompt: {
     fontSize: 14,
-    color: "#8C7C55",
+    color: "#6B7280",
     fontFamily: "Inter_400Regular",
   },
   signUpLink: {
     fontSize: 14,
-    color: "#C8911A",
+    color: "#7C3AED",
     fontFamily: "Inter_600SemiBold",
   },
 });

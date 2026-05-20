@@ -63,7 +63,7 @@ export default function RequestScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => (step === "amount" ? setStep("contact") : router.back())}>
-          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
+          <Ionicons name="chevron-back" size={24} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {step === "contact" ? "Request Money" : "Enter Amount"}
@@ -177,23 +177,23 @@ export default function RequestScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   content: { padding: 20, paddingBottom: 40 },
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 14,
     paddingHorizontal: 14,
     marginBottom: 24,
@@ -202,12 +202,12 @@ const styles = StyleSheet.create({
     height: 48,
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#EDE0B0" },
-  listLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B5E3C", marginBottom: 10 },
+  searchInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#1A1426" },
+  listLabel: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#9CA3AF", marginBottom: 10 },
   contactRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 14,
     padding: 14,
     marginBottom: 8,
@@ -227,8 +227,8 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 14 },
   contactInfo: { flex: 1 },
-  contactName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 2 },
-  contactHandle: { fontSize: 13, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  contactName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 2 },
+  contactHandle: { fontSize: 13, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   selectedContact: { alignItems: "center", marginBottom: 32 },
   avatarLarge: {
     width: 72,
@@ -242,10 +242,10 @@ const styles = StyleSheet.create({
   selectedName: {
     fontSize: 18,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 4,
   },
-  selectedHandle: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  selectedHandle: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   amountWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -255,14 +255,14 @@ const styles = StyleSheet.create({
   currencyPrefix: {
     fontSize: 28,
     fontFamily: "Inter_400Regular",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     marginRight: 8,
     marginTop: 6,
   },
   amountInput: {
     fontSize: 52,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     minWidth: 120,
     textAlign: "center",
   },
@@ -270,14 +270,14 @@ const styles = StyleSheet.create({
   quickChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 20,
   },
-  quickChipText: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
+  quickChipText: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
   noteWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
@@ -285,9 +285,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F3F4F6",
   },
-  noteInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#EDE0B0" },
+  noteInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#1A1426" },
   cta: {
-    backgroundColor: "#D4A830",
+    backgroundColor: "#EC4899",
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "#D4A830",
+    backgroundColor: "#EC4899",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
@@ -308,25 +308,25 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 28,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 8,
   },
   successAmount: {
     fontSize: 40,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#D4A830",
+    color: "#EC4899",
     marginBottom: 4,
   },
-  successTo: { fontSize: 16, color: "#8C7C55", fontFamily: "Inter_400Regular", marginBottom: 8 },
+  successTo: { fontSize: 16, color: "#6B7280", fontFamily: "Inter_400Regular", marginBottom: 8 },
   successNote: {
     fontSize: 14,
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     fontFamily: "Inter_400Regular",
     fontStyle: "italic",
     marginBottom: 40,
   },
   successDone: {
-    backgroundColor: "#D4A830",
+    backgroundColor: "#EC4899",
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 60,

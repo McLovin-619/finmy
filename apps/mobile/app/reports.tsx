@@ -107,13 +107,13 @@ export default function ReportsScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
+          <Ionicons name="chevron-back" size={24} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Monthly Reports</Text>
         <TouchableOpacity
           onPress={() => Alert.alert("Export", "PDF export will be available in the next release.")}
         >
-          <Ionicons name="share-outline" size={22} color="#C8911A" />
+          <Ionicons name="share-outline" size={22} color="#7C3AED" />
         </TouchableOpacity>
       </View>
 
@@ -137,7 +137,7 @@ export default function ReportsScreen() {
 
       {/* Summary hero card */}
       <LinearGradient
-        colors={["#C8911A", "#D4A830"]}
+        colors={["#7C3AED", "#EC4899"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.heroCard}
@@ -197,7 +197,7 @@ export default function ReportsScreen() {
       <View style={styles.aiCard}>
         <View style={styles.aiCardHeader}>
           <LinearGradient
-            colors={["#C8911A", "#D4A830"]}
+            colors={["#7C3AED", "#EC4899"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.aiIconGrad}
@@ -229,7 +229,7 @@ export default function ReportsScreen() {
       {/* AI Tips */}
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitleRow}>
-          <Ionicons name="sparkles-outline" size={16} color="#C8911A" />
+          <Ionicons name="sparkles-outline" size={16} color="#7C3AED" />
           <Text style={[styles.sectionTitle, { marginLeft: 5 }]}>AI tips to save more</Text>
         </View>
         <Text style={styles.sectionSub}>{report.aiTips.length} insights</Text>
@@ -244,7 +244,7 @@ export default function ReportsScreen() {
         >
           <View style={styles.tipLeft}>
             <View style={styles.tipIconWrap}>
-              <Ionicons name={tip.icon as any} size={18} color="#C8911A" />
+              <Ionicons name={tip.icon as any} size={18} color="#7C3AED" />
             </View>
             <View style={styles.tipMid}>
               <Text style={styles.tipTitle}>{tip.title}</Text>
@@ -294,7 +294,7 @@ export default function ReportsScreen() {
         </View>
         <View style={styles.savingsTrack}>
           <LinearGradient
-            colors={["#C8911A", "#D4A830"]}
+            colors={["#7C3AED", "#EC4899"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.savingsFill, { width: `${Math.min(savingsRate, 100)}%` as any }]}
@@ -316,7 +316,7 @@ export default function ReportsScreen() {
 
       {/* YTD callout */}
       <View style={styles.ytdCard}>
-        <Ionicons name="calendar-outline" size={18} color="#C8911A" />
+        <Ionicons name="calendar-outline" size={18} color="#7C3AED" />
         <Text style={styles.ytdText}>
           Year-to-date you have spent{" "}
           <Text style={styles.ytdBold}>
@@ -336,7 +336,7 @@ export default function ReportsScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
 
   // Header
   header: {
@@ -345,11 +345,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
 
   // Month selector
   monthScroll: { marginVertical: 16 },
@@ -358,10 +358,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
   },
-  monthChipActive: { backgroundColor: "#C8911A" },
-  monthChipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#8C7C55" },
+  monthChipActive: { backgroundColor: "#7C3AED" },
+  monthChipText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B7280" },
   monthChipTextActive: { color: "white", fontFamily: "Inter_600SemiBold" },
 
   // Hero card
@@ -418,13 +418,13 @@ const styles = StyleSheet.create({
   // AI summary card
   aiCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 18,
     marginBottom: 24,
     borderLeftWidth: 3,
-    borderLeftColor: "#C8911A",
-    shadowColor: "#C8911A",
+    borderLeftColor: "#7C3AED",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -438,15 +438,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  aiCardTitle: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0", flex: 1 },
+  aiCardTitle: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426", flex: 1 },
   aiPoweredPill: {
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  aiPoweredText: { fontSize: 10, fontFamily: "Inter_500Medium", color: "#C8911A" },
-  aiSummaryText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#A89B6E", lineHeight: 22 },
+  aiPoweredText: { fontSize: 10, fontFamily: "Inter_500Medium", color: "#7C3AED" },
+  aiSummaryText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#374151", lineHeight: 22 },
 
   // Section headers
   sectionHeader: {
@@ -457,13 +457,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitleRow: { flexDirection: "row", alignItems: "center" },
-  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
 
   // Generic card
   card: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 4,
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 1,
   },
-  divider: { height: 1, backgroundColor: "#1E1A10" },
+  divider: { height: 1, backgroundColor: "#F9FAFB" },
 
   // Category bars
   catRow: { flexDirection: "row", alignItems: "center", paddingVertical: 14, gap: 12 },
@@ -487,18 +487,18 @@ const styles = StyleSheet.create({
   },
   catMid: { flex: 1 },
   catTitleRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
-  catName: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#EDE0B0" },
-  catAmt: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  catName: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#1A1426" },
+  catAmt: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
   barTrack: {
     height: 5,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
     borderRadius: 3,
     overflow: "hidden",
     marginBottom: 5,
   },
   barFill: { height: 5, borderRadius: 3 },
   catMeta: { flexDirection: "row", alignItems: "center", gap: 8 },
-  catPct: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  catPct: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
   changePill: {
     flexDirection: "row",
     alignItems: "center",
@@ -512,14 +512,14 @@ const styles = StyleSheet.create({
   // AI tip cards
   tipCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 18,
     padding: 16,
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    shadowColor: "#C8911A",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -530,14 +530,14 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 1,
   },
   tipMid: { flex: 1 },
-  tipTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0", marginBottom: 3 },
-  tipBody: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#8C7C55", lineHeight: 17 },
+  tipTitle: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426", marginBottom: 3 },
+  tipBody: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#6B7280", lineHeight: 17 },
   tipSavingBadge: {
     alignItems: "center",
     backgroundColor: "#ECFDF5",
@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
   },
   topCatCard: {
     flex: 1,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 14,
     alignItems: "center",
@@ -581,14 +581,14 @@ const styles = StyleSheet.create({
   topCatAmt: {
     fontSize: 13,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 2,
     textAlign: "center",
   },
   topCatName: {
     fontSize: 10,
     fontFamily: "Inter_400Regular",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     textAlign: "center",
   },
   rankBadge: { marginTop: 6, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   // Savings rate card
   savingsCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 18,
     marginBottom: 16,
@@ -613,11 +613,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  savingsTitle: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  savingsRate: { fontSize: 24, fontFamily: "PlusJakartaSans_700Bold", color: "#C8911A" },
+  savingsTitle: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  savingsRate: { fontSize: 24, fontFamily: "PlusJakartaSans_700Bold", color: "#7C3AED" },
   savingsTrack: {
     height: 8,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
     borderRadius: 4,
     overflow: "hidden",
     marginBottom: 10,
@@ -628,17 +628,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    color: "#8C7C55",
+    color: "#6B7280",
     lineHeight: 18,
   },
   savingsGoalPin: {
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 6,
     paddingHorizontal: 7,
     paddingVertical: 3,
     alignSelf: "flex-start",
   },
-  savingsGoalPinText: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
+  savingsGoalPinText: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
 
   // YTD card
   ytdCard: {
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 10,
     marginHorizontal: 20,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 14,
     padding: 14,
   },
@@ -654,8 +654,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontFamily: "Inter_400Regular",
-    color: "#8C7C55",
+    color: "#6B7280",
     lineHeight: 20,
   },
-  ytdBold: { fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  ytdBold: { fontFamily: "Inter_600SemiBold", color: "#1A1426" },
 });

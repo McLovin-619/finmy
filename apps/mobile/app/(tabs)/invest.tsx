@@ -87,7 +87,7 @@ export default function InvestScreen() {
     >
       {/* Full-bleed gradient header */}
       <LinearGradient
-        colors={["#1A1308", "#231B0C"]}
+        colors={["#7C3AED", "#EC4899"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[styles.gradientHeader, { paddingTop: insets.top + 14 }]}
@@ -160,7 +160,7 @@ export default function InvestScreen() {
             </View>
           </View>
 
-          <AreaChart data={chartData} color="#C8911A" />
+          <AreaChart data={chartData} color="#7C3AED" />
 
           <View style={styles.xLabels}>
             {chartData
@@ -186,7 +186,7 @@ export default function InvestScreen() {
         <View style={styles.scheduleCard}>
           <View style={styles.scheduleRow}>
             <View style={styles.scheduleIconWrap}>
-              <Ionicons name="calendar-outline" size={18} color="#C8911A" />
+              <Ionicons name="calendar-outline" size={18} color="#7C3AED" />
             </View>
             <View style={styles.scheduleMid}>
               <Text style={styles.scheduleLabel}>Monthly deduction</Text>
@@ -251,7 +251,7 @@ export default function InvestScreen() {
           onPress={() => router.push("/investments" as any)}
         >
           <LinearGradient
-            colors={["#C8911A", "#D4A830"]}
+            colors={["#7C3AED", "#EC4899"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.ctaGrad}
@@ -269,7 +269,7 @@ export default function InvestScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: "#1A1308" },
+  scroll: { flex: 1, backgroundColor: "#7C3AED" },
   scrollContent: { paddingBottom: 48 },
 
   gradientHeader: {
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   statDivider: { width: 1, height: 28, backgroundColor: "rgba(255,255,255,0.2)" },
 
   body: {
-    backgroundColor: "#0D0B07",
+    backgroundColor: "#FAFAFA",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     marginTop: -28,
@@ -339,14 +339,14 @@ const styles = StyleSheet.create({
   // Chart
   chartCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     paddingTop: 16,
     paddingBottom: 8,
     marginBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
     overflow: "hidden",
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  rangeGain: { fontSize: 18, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  rangeGain: { fontSize: 18, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   rangeGainPct: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#10B981", marginTop: 2 },
   rangeGainPctNeg: { color: "#EF4444" },
   rangeRow: { flexDirection: "row", gap: 4 },
@@ -366,11 +366,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 8,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
   },
-  rangeChipOn: { backgroundColor: "#221D12" },
-  rangeText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#8C7C55" },
-  rangeTextOn: { color: "#C8911A" },
+  rangeChipOn: { backgroundColor: "#F4F1FA" },
+  rangeText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#6B7280" },
+  rangeTextOn: { color: "#7C3AED" },
   xLabels: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 4,
   },
-  xLabel: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  xLabel: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 
   // Section headers
   sectionHeader: {
@@ -388,19 +388,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  seeAll: { fontSize: 13, color: "#C8911A", fontFamily: "Inter_500Medium" },
+  sectionTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  seeAll: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
 
   // Schedule card
   scheduleCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
-    shadowColor: "#000",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
   },
@@ -409,44 +409,44 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     alignItems: "center",
     justifyContent: "center",
   },
   scheduleMid: { flex: 1 },
   scheduleLabel: {
     fontSize: 12,
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     fontFamily: "Inter_400Regular",
     marginBottom: 3,
   },
-  scheduleValue: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  scheduleValue: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
   activePill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "#0D1A11",
+    backgroundColor: "#ECFDF5",
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  pausedPill: { backgroundColor: "#1A1508" },
+  pausedPill: { backgroundColor: "#FEF3C7" },
   activeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#10B981" },
-  pausedDot: { backgroundColor: "#C8911A" },
+  pausedDot: { backgroundColor: "#F59E0B" },
   activeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#10B981" },
-  pausedText: { color: "#C8911A" },
+  pausedText: { color: "#D97706" },
 
   // Sectors
   sectorsCard: {
     marginHorizontal: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 4,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 1,
   },
@@ -460,14 +460,14 @@ const styles = StyleSheet.create({
   },
   sectorMid: { flex: 1 },
   sectorTitleRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
-  sectorName: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  sectorName: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
   sectorReturn: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#10B981" },
-  barTrack: { height: 4, backgroundColor: "#1E1A10", borderRadius: 2, overflow: "hidden" },
+  barTrack: { height: 4, backgroundColor: "#F3F4F6", borderRadius: 2, overflow: "hidden" },
   barFill: { height: 4, borderRadius: 2 },
   sectorRight: { alignItems: "flex-end", minWidth: 68 },
-  sectorPct: { fontSize: 14, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  sectorValue: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginTop: 1 },
-  sectorDivider: { height: 1, backgroundColor: "#1E1A10" },
+  sectorPct: { fontSize: 14, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  sectorValue: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginTop: 1 },
+  sectorDivider: { height: 1, backgroundColor: "#F9FAFB" },
 
   // CTA
   ctaWrap: { marginHorizontal: 20, borderRadius: 16, overflow: "hidden" },

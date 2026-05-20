@@ -113,7 +113,7 @@ function RedeemSheet({
                 {d.pointsCost.toLocaleString("en-SA")} pts
               </Text>
               {!affordable && (
-                <Ionicons name="lock-closed" size={9} color="#6B5E3C" style={{ marginTop: 3 }} />
+                <Ionicons name="lock-closed" size={9} color="#9CA3AF" style={{ marginTop: 3 }} />
               )}
             </TouchableOpacity>
           );
@@ -155,7 +155,7 @@ function RedeemSheet({
         activeOpacity={0.85}
       >
         <LinearGradient
-          colors={["#C8911A", "#D4A830"]}
+          colors={["#7C3AED", "#EC4899"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={sheet.ctaGrad}
@@ -178,7 +178,7 @@ function RedeemSheet({
 
 const sheet = StyleSheet.create({
   root: {
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingTop: 12,
@@ -188,7 +188,7 @@ const sheet = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#2C2618",
+    backgroundColor: "#E5E7EB",
     alignSelf: "center",
     marginBottom: 20,
   },
@@ -206,7 +206,7 @@ const sheet = StyleSheet.create({
   sheetTitle: {
     fontSize: 17,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     textAlign: "center",
     marginBottom: 20,
   },
@@ -214,37 +214,37 @@ const sheet = StyleSheet.create({
   denomChip: {
     flex: 1,
     minWidth: 90,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F9FAFB",
     borderRadius: 14,
     padding: 12,
     alignItems: "center",
     borderWidth: 1.5,
     borderColor: "#F3F4F6",
   },
-  denomChipActive: { backgroundColor: "#221D12", borderColor: "#C8911A" },
+  denomChipActive: { backgroundColor: "#F4F1FA", borderColor: "#7C3AED" },
   denomChipDisabled: { opacity: 0.55 },
   denomSar: {
     fontSize: 16,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 4,
   },
-  denomSarActive: { color: "#C8911A" },
-  denomSarDisabled: { color: "#6B5E3C" },
-  denomPts: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#8C7C55" },
-  denomPtsActive: { color: "#C8911A" },
-  denomPtsDisabled: { color: "#6B5E3C" },
+  denomSarActive: { color: "#7C3AED" },
+  denomSarDisabled: { color: "#9CA3AF" },
+  denomPts: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#6B7280" },
+  denomPtsActive: { color: "#7C3AED" },
+  denomPtsDisabled: { color: "#9CA3AF" },
   summaryRow: {
     flexDirection: "row",
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F9FAFB",
     borderRadius: 14,
     padding: 14,
     marginBottom: 14,
     justifyContent: "space-between",
   },
   summaryItem: { alignItems: "center" },
-  summaryLabel: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginBottom: 4 },
-  summaryValue: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
+  summaryLabel: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 4 },
+  summaryValue: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
   summaryValueRed: { color: "#EF4444" },
   insufficientBanner: {
     flexDirection: "row",
@@ -266,7 +266,7 @@ const sheet = StyleSheet.create({
   ctaGrad: { alignItems: "center", paddingVertical: 16 },
   ctaText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "white" },
   cancelBtn: { alignItems: "center", paddingVertical: 12 },
-  cancelText: { fontSize: 15, color: "#6B5E3C", fontFamily: "Inter_500Medium" },
+  cancelText: { fontSize: 15, color: "#9CA3AF", fontFamily: "Inter_500Medium" },
 });
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
@@ -291,17 +291,17 @@ export default function StoreScreen() {
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
+            <Ionicons name="chevron-back" size={24} color="#1A1426" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Points Store</Text>
           <TouchableOpacity onPress={() => router.push("/loyalty" as any)}>
-            <Ionicons name="gift-outline" size={22} color="#C8911A" />
+            <Ionicons name="gift-outline" size={22} color="#7C3AED" />
           </TouchableOpacity>
         </View>
 
         {/* Points balance banner */}
         <LinearGradient
-          colors={["#C8911A", "#D4A830"]}
+          colors={["#7C3AED", "#EC4899"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.pointsBanner}
@@ -318,7 +318,7 @@ export default function StoreScreen() {
 
         {/* How it works */}
         <View style={styles.howCard}>
-          <Ionicons name="information-circle-outline" size={16} color="#C8911A" />
+          <Ionicons name="information-circle-outline" size={16} color="#7C3AED" />
           <Text style={styles.howText}>
             1 pt = SAR 0.10 in gift card value. Redeem instantly — the code is emailed to you within
             5 minutes.
@@ -341,7 +341,7 @@ export default function StoreScreen() {
               <Ionicons
                 name={CATEGORY_ICONS[f]}
                 size={13}
-                color={activeFilter === f ? "white" : "#8C7C55"}
+                color={activeFilter === f ? "white" : "#6B7280"}
               />
               <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
                 {CATEGORY_LABELS[f]}
@@ -371,7 +371,7 @@ export default function StoreScreen() {
                   </View>
                   {!canAfford && (
                     <View style={styles.gridLockBadge}>
-                      <Ionicons name="lock-closed" size={9} color="#6B5E3C" />
+                      <Ionicons name="lock-closed" size={9} color="#9CA3AF" />
                     </View>
                   )}
                 </View>
@@ -414,7 +414,7 @@ export default function StoreScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
   content: { paddingBottom: 48 },
 
   header: {
@@ -423,11 +423,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
 
   pointsBanner: {
     marginHorizontal: 20,
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 8,
     marginHorizontal: 20,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    color: "#8C7C55",
+    color: "#6B7280",
     lineHeight: 18,
   },
 
@@ -480,16 +480,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
   },
-  filterChipActive: { backgroundColor: "#C8911A" },
-  filterText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#8C7C55" },
+  filterChipActive: { backgroundColor: "#7C3AED" },
+  filterText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#6B7280" },
   filterTextActive: { color: "white" },
 
   gridCount: {
     fontSize: 12,
     fontFamily: "Inter_400Regular",
-    color: "#6B5E3C",
+    color: "#9CA3AF",
     paddingHorizontal: 20,
     marginBottom: 12,
     marginTop: 4,
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   },
   gridCard: {
     width: "47%",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 18,
     overflow: "hidden",
     shadowColor: "#000",
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -545,10 +545,10 @@ const styles = StyleSheet.create({
   gridCardName: {
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 3,
   },
-  gridCardFrom: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#6B5E3C" },
+  gridCardFrom: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
 
   modalBackdrop: {
     flex: 1,

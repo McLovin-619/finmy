@@ -128,7 +128,7 @@ export default function SubscriptionsScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#EDE0B0" />
+          <Ionicons name="chevron-back" size={24} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Subscriptions</Text>
         <View style={{ width: 24 }} />
@@ -154,7 +154,7 @@ export default function SubscriptionsScreen() {
           </View>
           {nextDue ? (
             <View style={styles.nextDueWrap}>
-              <Ionicons name="calendar-outline" size={12} color="#C8911A" />
+              <Ionicons name="calendar-outline" size={12} color="#7C3AED" />
               <Text style={styles.nextDueText}>
                 Next: {nextDue.name} on {nextDue.nextBillingDay}
               </Text>
@@ -205,7 +205,7 @@ export default function SubscriptionsScreen() {
         }
         activeOpacity={0.8}
       >
-        <Ionicons name="add" size={18} color="#C8911A" />
+        <Ionicons name="add" size={18} color="#7C3AED" />
         <Text style={styles.addButtonText}>Add subscription</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -278,7 +278,7 @@ function monthName() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
 
   header: {
     flexDirection: "row",
@@ -286,40 +286,40 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
+  headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
 
   // Summary card
   summaryCard: {
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 4,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 20,
     padding: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    shadowColor: "#C8911A",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 3,
   },
   summaryLeft: {},
-  summaryLabel: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginBottom: 4 },
-  summaryAmount: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#8C7C55" },
-  summaryAmountBig: { fontSize: 32, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  summaryYearly: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular", marginTop: 4 },
+  summaryLabel: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginBottom: 4 },
+  summaryAmount: { fontSize: 15, fontFamily: "Inter_400Regular", color: "#6B7280" },
+  summaryAmountBig: { fontSize: 32, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  summaryYearly: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular", marginTop: 4 },
   summaryRight: { alignItems: "flex-end", gap: 6 },
   summaryStatRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   summaryDot: { width: 8, height: 8, borderRadius: 4 },
-  summaryStat: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#A89B6E" },
+  summaryStat: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#374151" },
   nextDueWrap: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-  nextDueText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#C8911A" },
+  nextDueText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#7C3AED" },
 
   // Filters
   filtersRow: { paddingHorizontal: 20, paddingVertical: 16, gap: 8 },
@@ -327,25 +327,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
   },
-  filterChipOn: { backgroundColor: "#C8911A", borderColor: "#C8911A" },
-  filterText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#8C7C55" },
+  filterChipOn: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  filterText: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#6B7280" },
   filterTextOn: { color: "white" },
 
   // List
   listWrap: { paddingHorizontal: 20, gap: 8 },
 
   empty: { alignItems: "center", paddingVertical: 40, gap: 12 },
-  emptyText: { fontSize: 14, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  emptyText: { fontSize: 14, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 
   // Row
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     borderRadius: 16,
     padding: 14,
     gap: 12,
@@ -364,18 +364,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rowAvatarText: { color: "white", fontFamily: "Inter_600SemiBold", fontSize: 14 },
-  rowAvatarTextPaused: { color: "#6B5E3C" },
+  rowAvatarTextPaused: { color: "#9CA3AF" },
   rowMid: { flex: 1 },
   rowTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 },
-  rowName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#EDE0B0" },
-  rowNamePaused: { color: "#6B5E3C" },
+  rowName: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  rowNamePaused: { color: "#9CA3AF" },
   pausedBadge: {
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F3F4F6",
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  pausedBadgeText: { fontSize: 10, fontFamily: "Inter_500Medium", color: "#6B5E3C" },
+  pausedBadgeText: { fontSize: 10, fontFamily: "Inter_500Medium", color: "#9CA3AF" },
   dueSoonBadge: {
     backgroundColor: "#FEF3C7",
     borderRadius: 6,
@@ -384,11 +384,11 @@ const styles = StyleSheet.create({
   },
   dueSoonBadgeText: { fontSize: 10, fontFamily: "Inter_500Medium", color: "#D97706" },
   rowMetaRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  rowMeta: { fontSize: 12, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  rowMeta: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   rowRight: { alignItems: "flex-end" },
-  rowAmount: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#EDE0B0" },
-  rowAmountPaused: { color: "#6B5E3C" },
-  rowCycle: { fontSize: 11, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  rowAmount: { fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  rowAmountPaused: { color: "#9CA3AF" },
+  rowCycle: { fontSize: 11, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
 
   // Add button
   addButton: {
@@ -401,9 +401,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
     borderStyle: "dashed",
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
   },
-  addButtonText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
+  addButtonText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
 });

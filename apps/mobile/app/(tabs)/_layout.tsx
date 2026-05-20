@@ -11,7 +11,7 @@ type TabIconProps = {
 function TabIcon({ name, focused }: TabIconProps) {
   return (
     <View style={[styles.iconWrapper, focused && styles.iconWrapperActive]}>
-      <Ionicons name={name} size={20} color={focused ? "white" : "#6B5E3C"} />
+      <Ionicons name={name} size={20} color={focused ? "white" : "#9CA3AF"} />
     </View>
   );
 }
@@ -23,8 +23,8 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabLabel,
-        tabBarActiveTintColor: "#C8911A",
-        tabBarInactiveTintColor: "#6B5E3C",
+        tabBarActiveTintColor: "#7C3AED",
+        tabBarInactiveTintColor: "#9CA3AF",
       }}
     >
       <Tabs.Screen
@@ -61,7 +61,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: "#18150D",
+    backgroundColor: "white",
     borderTopWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
@@ -82,6 +82,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   iconWrapperActive: {
-    backgroundColor: "#C8911A",
+    backgroundColor: "#7C3AED",
   },
 });

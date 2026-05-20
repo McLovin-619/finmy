@@ -12,7 +12,7 @@ export function SocialButton({ provider, onPress }: SocialButtonProps) {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.7}>
       {provider === "apple" ? (
-        <Ionicons name="logo-apple" size={18} color="#EDE0B0" />
+        <Ionicons name="logo-apple" size={18} color="#1A1426" />
       ) : (
         <GoogleG />
       )}
@@ -62,12 +62,12 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: "#2C2618",
-    backgroundColor: "#1A1610",
+    borderColor: "#E5E7EB",
+    backgroundColor: "white",
   },
   label: {
     fontSize: 15,
-    color: "#EDE0B0",
+    color: "#1A1426",
     fontFamily: "Inter_500Medium",
   },
 });

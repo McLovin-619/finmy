@@ -25,7 +25,7 @@ export function PrimaryButton({ label, onPress, loading, disabled, style }: Prim
       style={style}
     >
       <LinearGradient
-        colors={["#C8911A", "#D4A830"]}
+        colors={["#7C3AED", "#EC4899"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.gradient}
@@ -75,11 +75,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     borderWidth: 1.5,
-    borderColor: "#2C2618",
-    backgroundColor: "#1A1610",
+    borderColor: "#E5E7EB",
+    backgroundColor: "white",
   },
   outlineLabel: {
-    color: "#EDE0B0",
+    color: "#1A1426",
     fontSize: 15,
     fontFamily: "Inter_500Medium",
   },

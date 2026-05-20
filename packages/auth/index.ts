@@ -2,6 +2,7 @@ import { createEnv } from "@finmy/lib";
 import { db } from "@finmy/db";
 import { accounts, digitalWallets, loyalty, sessions, users, verifications } from "@finmy/db/schema";
 import { betterAuth } from "better-auth";
+import { bearer } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
@@ -85,6 +86,8 @@ export const auth = betterAuth({
       },
     },
   },
+
+  plugins: [bearer()],
 
   socialProviders: {
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET

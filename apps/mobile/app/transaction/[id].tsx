@@ -76,7 +76,7 @@ const MOCK: Record<string, TxRecord> = {
   t6: {
     merchant: "Transfer from Khalid",
     abbr: "Kh",
-    color: "#C8911A",
+    color: "#7C3AED",
     category: "Transfer",
     halala: 50000,
     type: "credit",
@@ -101,7 +101,7 @@ export default function TransactionDetailScreen() {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <LinearGradient
-        colors={["#C8911A", "#D4A830"]}
+        colors={["#7C3AED", "#EC4899"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.hero}
@@ -155,7 +155,7 @@ export default function TransactionDetailScreen() {
 
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.actionBtn}>
-            <Ionicons name="download-outline" size={18} color="#C8911A" />
+            <Ionicons name="download-outline" size={18} color="#7C3AED" />
             <Text style={styles.actionLabel}>Download</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.actionBtn, styles.actionBtnDanger]}>
@@ -169,7 +169,7 @@ export default function TransactionDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#0D0B07" },
+  root: { flex: 1, backgroundColor: "#FAFAFA" },
   hero: { paddingBottom: 36, paddingHorizontal: 24, alignItems: "center" },
   backButton: {
     alignSelf: "flex-start",
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   amountDebit: { color: "white" },
   body: { flex: 1, marginTop: -16 },
   card: {
-    backgroundColor: "#1A1610",
+    backgroundColor: "white",
     marginHorizontal: 20,
     borderRadius: 20,
     padding: 20,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 15,
     fontFamily: "PlusJakartaSans_700Bold",
-    color: "#EDE0B0",
+    color: "#1A1426",
     marginBottom: 16,
   },
   detailRow: {
@@ -232,27 +232,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F9FAFB",
   },
-  detailLabel: { fontSize: 13, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  detailLabel: { fontSize: 13, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   detailValue: {
     fontSize: 13,
     fontFamily: "Inter_500Medium",
-    color: "#EDE0B0",
+    color: "#1A1426",
     flex: 1,
     textAlign: "right",
   },
   statusGreen: { color: "#10B981" },
   receiptBox: {
     height: 100,
-    backgroundColor: "#1E1A10",
+    backgroundColor: "#F9FAFB",
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: "#2C2618",
+    borderColor: "#E5E7EB",
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
   },
-  receiptHint: { fontSize: 13, color: "#6B5E3C", fontFamily: "Inter_400Regular" },
+  receiptHint: { fontSize: 13, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   actionsRow: { flexDirection: "row", gap: 12, paddingHorizontal: 20 },
   actionBtn: {
     flex: 1,
@@ -260,11 +260,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#221D12",
+    backgroundColor: "#F4F1FA",
     borderRadius: 14,
     paddingVertical: 14,
   },
   actionBtnDanger: { backgroundColor: "#FEF2F2" },
-  actionLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#C8911A" },
+  actionLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
   actionLabelDanger: { color: "#EF4444" },
 });

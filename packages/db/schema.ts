@@ -36,6 +36,8 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "investment_deduction",
   "bill_payment",
   "card_payment",
+  "transfer_out",
+  "transfer_in",
 ]);
 
 export const transactionStatusEnum = pgEnum("transaction_status", [
@@ -294,6 +296,10 @@ export const transactions = pgTable(
     staffRecipientId: uuid("staff_recipient_id").references(() => householdStaff.id, {
       onDelete: "set null",
     }),
+    // For transfer_in / transfer_out: the other side's wallet id
+    peerWalletId: uuid("peer_wallet_id").references(() => digitalWallets.id, {
+      onDelete: "set null",
+    }),
     description: text("description"),
     occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -302,6 +308,7 @@ export const transactions = pgTable(
     // Primary feed query: wallet's transactions ordered by time
     index("transactions_wallet_occurred_idx").on(t.walletId, t.occurredAt),
     index("transactions_staff_recipient_idx").on(t.staffRecipientId),
+    index("transactions_peer_wallet_idx").on(t.peerWalletId),
   ],
 );
 

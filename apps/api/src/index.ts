@@ -8,6 +8,7 @@ import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { z } from "zod";
 import { staffRoutes } from "./routes/staff";
+import { walletRoutes } from "./routes/wallet";
 
 // ─── Env ──────────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ app.use(
 app.on(["GET", "POST"], "/auth/**", (c) => auth.handler(c.req.raw));
 
 app.route("/staff", staffRoutes);
+app.route("/wallet", walletRoutes);
 
 app.get("/health", (c) => {
   return c.json({ ok: true, ts: new Date().toISOString() });
