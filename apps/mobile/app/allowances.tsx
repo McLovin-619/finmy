@@ -18,40 +18,19 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
+import {
+  type Allowance,
+  type AllowanceFrequency,
+  type AllowanceRelation,
+  type ApiAllowance,
+  RELATION_COLORS,
+  getInitials,
+  toDisplay,
+} from "@/lib/allowance-display";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type AllowanceFrequency = "daily" | "weekly" | "monthly";
-type AllowanceRelation = "Son" | "Daughter" | "Staff" | "Other";
-type AllowanceStatus = "active" | "paused";
 type AddStep = "who" | "schedule";
-
-type ApiAllowance = {
-  id: string;
-  name: string;
-  relation: "son" | "daughter" | "staff" | "other";
-  targetIbanOrPhone: string;
-  amountSar: number;
-  frequency: AllowanceFrequency;
-  nextPayoutDate: string;
-  isActive: boolean;
-  totalSentSar: number;
-  createdAt: string;
-};
-
-type Allowance = {
-  id: string;
-  name: string;
-  relation: AllowanceRelation;
-  initials: string;
-  color: string;
-  handle: string;
-  amountSar: number;
-  frequency: AllowanceFrequency;
-  dayLabel: string;
-  status: AllowanceStatus;
-  totalSentSar: number;
-};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -62,13 +41,6 @@ const RELATION_ICONS: Record<AllowanceRelation, keyof typeof Ionicons.glyphMap> 
   Daughter: "woman-outline",
   Staff: "briefcase-outline",
   Other: "person-outline",
-};
-
-const RELATION_COLORS: Record<AllowanceRelation, string> = {
-  Son: "#7C3AED",
-  Daughter: "#EC4899",
-  Staff: "#10B981",
-  Other: "#6B7280",
 };
 
 const FREQ_LABELS: Record<AllowanceFrequency, string> = {
@@ -92,43 +64,6 @@ function toMonthly(amount: number, freq: AllowanceFrequency) {
   if (freq === "daily") return amount * 30;
   if (freq === "weekly") return amount * 4.33;
   return amount;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-function getDayLabel(freq: AllowanceFrequency, nextPayoutDate: string): string {
-  const d = new Date(nextPayoutDate);
-  if (freq === "daily") return "Every day";
-  if (freq === "weekly") {
-    const names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    return `Every ${names[d.getDay()]}`;
-  }
-  const day = d.getDate();
-  const suffix = day === 1 ? "st" : day === 2 ? "nd" : day === 3 ? "rd" : "th";
-  return `${day}${suffix} of every month`;
-}
-
-function toDisplay(a: ApiAllowance): Allowance {
-  const rel = (a.relation.charAt(0).toUpperCase() + a.relation.slice(1)) as AllowanceRelation;
-  return {
-    id: a.id,
-    name: a.name,
-    relation: rel,
-    initials: getInitials(a.name),
-    color: RELATION_COLORS[rel],
-    handle: a.targetIbanOrPhone,
-    amountSar: a.amountSar,
-    frequency: a.frequency,
-    dayLabel: getDayLabel(a.frequency, a.nextPayoutDate),
-    status: a.isActive ? "active" : "paused",
-    totalSentSar: a.totalSentSar,
-  };
 }
 
 function computeNextPayoutDate(freq: AllowanceFrequency, selectedDay: string): string {

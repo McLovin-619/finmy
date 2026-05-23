@@ -14,28 +14,48 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
-import { MOCK_TIERS, type Tier, type TierName } from "@/lib/mock-data";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type TierKey = "standard" | "silver" | "gold" | "diamond";
+
+type ApiTier = {
+  key: TierKey;
+  label: string;
+  pointsRequired: number;
+  cashbackPct: number;
+  pointsMultiplier: number;
+  feeDiscountPct: number;
+  withdrawalLimitSar: number;
+  exclusiveInvestments: boolean;
+  dedicatedSupport: boolean;
+};
+
+type Tier = ApiTier & { icon: string; colors: [string, string] };
 
 type LoyaltyApiResponse = {
-  tier: string;
+  tier: TierKey;
   pointsBalance: number;
   lifetimePoints: number;
   lifetimeDepositSar: number;
   lifetimeSpendSar: number;
-  tierBenefits: { adminFeeDiscount: number; cashbackPct: number; withdrawalLimitSar: number };
+  currentTier: ApiTier;
+  tiers: ApiTier[];
   createdAt: string;
 };
 
+const TIER_VISUALS: Record<TierKey, { icon: string; colors: [string, string] }> = {
+  standard: { icon: "ribbon-outline", colors: ["#9CA3AF", "#6B7280"] },
+  silver: { icon: "star-outline", colors: ["#94A3B8", "#64748B"] },
+  gold: { icon: "trophy-outline", colors: ["#F59E0B", "#D97706"] },
+  diamond: { icon: "sparkles-outline", colors: ["#7C3AED", "#EC4899"] },
+};
+
+function decorate(t: ApiTier): Tier {
+  return { ...t, ...TIER_VISUALS[t.key] };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getTier(name: TierName): Tier {
-  return MOCK_TIERS.find((t) => t.name === name)!;
-}
-
-function getNextTier(name: TierName): Tier | null {
-  const idx = MOCK_TIERS.findIndex((t) => t.name === name);
-  return idx < MOCK_TIERS.length - 1 ? MOCK_TIERS[idx + 1] : null;
-}
 
 /** Progress fraction (0–1) between current tier threshold and next tier threshold */
 function tierProgress(points: number, current: Tier, next: Tier | null): number {
@@ -121,30 +141,33 @@ export default function LoyaltyScreen() {
     },
   });
 
-  const currentTierName = (loyaltyData?.tier ?? "standard") as TierName;
-  const totalPoints = loyaltyData?.pointsBalance ?? 0;
-  const [userPickedTier, setUserPickedTier] = useState<TierName | null>(null);
-  const selectedTierName = userPickedTier ?? currentTierName;
+  const [userPickedTier, setUserPickedTier] = useState<TierKey | null>(null);
 
-  const tierIdx = MOCK_TIERS.findIndex((t) => t.name === currentTierName);
-  const currentTier = getTier(currentTierName);
-  const nextTier = getNextTier(currentTierName);
-  const progress = tierProgress(totalPoints, currentTier, nextTier);
-  const ptsToNext = nextTier ? nextTier.pointsRequired - totalPoints : 0;
-  const cashbackEarned = loyaltyData
-    ? (loyaltyData.lifetimeSpendSar * (loyaltyData.tierBenefits.cashbackPct / 100)).toFixed(2)
-    : "0.00";
-
-  const selectedTier = getTier(selectedTierName);
-  const isCurrentTier = selectedTierName === currentTierName;
-
-  if (isLoading) {
+  if (isLoading || !loyaltyData) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator color="#7C3AED" size="large" />
       </View>
     );
   }
+
+  const tiers = loyaltyData.tiers.map(decorate);
+  const totalPoints = loyaltyData.pointsBalance;
+  const currentTierKey = loyaltyData.tier;
+  const selectedTierKey = userPickedTier ?? currentTierKey;
+
+  const tierIdx = tiers.findIndex((t) => t.key === currentTierKey);
+  const currentTier = tiers[tierIdx] ?? tiers[0];
+  const nextTier = tierIdx < tiers.length - 1 ? tiers[tierIdx + 1] : null;
+  const progress = tierProgress(totalPoints, currentTier, nextTier);
+  const ptsToNext = nextTier ? nextTier.pointsRequired - totalPoints : 0;
+  const cashbackEarned = (
+    loyaltyData.lifetimeSpendSar *
+    (currentTier.cashbackPct / 100)
+  ).toFixed(2);
+
+  const selectedTier = tiers.find((t) => t.key === selectedTierKey) ?? currentTier;
+  const isCurrentTier = selectedTierKey === currentTierKey;
 
   return (
     <ScrollView
@@ -176,7 +199,7 @@ export default function LoyaltyScreen() {
         <View style={styles.heroBadgeRow}>
           <View style={styles.heroBadge}>
             <Ionicons name={currentTier.icon as any} size={14} color="white" />
-            <Text style={styles.heroBadgeText}>{currentTier.name}</Text>
+            <Text style={styles.heroBadgeText}>{currentTier.label}</Text>
           </View>
           <Text style={styles.heroMonthPts}>{totalPoints > 0 ? `+${totalPoints} pts balance` : "Start earning points"}</Text>
         </View>
@@ -192,9 +215,9 @@ export default function LoyaltyScreen() {
         {nextTier ? (
           <View style={styles.heroProgressWrap}>
             <View style={styles.heroProgressLabels}>
-              <Text style={styles.heroProgressCurrent}>{currentTier.name}</Text>
+              <Text style={styles.heroProgressCurrent}>{currentTier.label}</Text>
               <Text style={styles.heroProgressNext}>
-                {ptsToNext.toLocaleString("en-SA")} pts to {nextTier.name}
+                {ptsToNext.toLocaleString("en-SA")} pts to {nextTier.label}
               </Text>
             </View>
             <View style={styles.heroProgressTrack}>
@@ -206,7 +229,7 @@ export default function LoyaltyScreen() {
               />
             </View>
             <Text style={styles.heroProgressPct}>
-              {Math.round(progress * 100)}% of the way to {nextTier.name}
+              {Math.round(progress * 100)}% of the way to {nextTier.label}
             </Text>
           </View>
         ) : (
@@ -228,18 +251,18 @@ export default function LoyaltyScreen() {
       {/* Tier progression track */}
       <View style={styles.tierTrackWrap}>
         <View style={styles.tierTrack}>
-          {MOCK_TIERS.map((tier, idx) => {
+          {tiers.map((tier, idx) => {
             const isPast = idx < tierIdx;
             const isCurrent = idx === tierIdx;
             const isFuture = idx > tierIdx;
-            const isSelected = tier.name === selectedTierName;
-            const isLast = idx === MOCK_TIERS.length - 1;
+            const isSelected = tier.key === selectedTierKey;
+            const isLast = idx === tiers.length - 1;
 
             return (
-              <React.Fragment key={tier.name}>
+              <React.Fragment key={tier.key}>
                 <TouchableOpacity
                   style={styles.tierNode}
-                  onPress={() => setUserPickedTier(tier.name)}
+                  onPress={() => setUserPickedTier(tier.key)}
                   activeOpacity={0.75}
                 >
                   <LinearGradient
@@ -259,7 +282,7 @@ export default function LoyaltyScreen() {
                       isFuture && styles.tierNodeLabelFuture,
                     ]}
                   >
-                    {tier.name}
+                    {tier.label}
                   </Text>
                   {isCurrent && <View style={styles.tierNodeCurrentDot} />}
                 </TouchableOpacity>
@@ -281,7 +304,7 @@ export default function LoyaltyScreen() {
           style={styles.selectedTierPill}
         >
           <Ionicons name={selectedTier.icon as any} size={13} color="white" />
-          <Text style={styles.selectedTierPillText}>{selectedTier.name} tier</Text>
+          <Text style={styles.selectedTierPillText}>{selectedTier.label} tier</Text>
         </LinearGradient>
         {!isCurrentTier && (
           <Text style={styles.selectedTierReq}>
@@ -293,7 +316,7 @@ export default function LoyaltyScreen() {
       {/* Benefits grid */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
-          {isCurrentTier ? "Your benefits" : `${selectedTierName} benefits`}
+          {isCurrentTier ? "Your benefits" : `${selectedTier.label} benefits`}
         </Text>
       </View>
       <View style={styles.benefitsGrid}>
@@ -326,14 +349,14 @@ export default function LoyaltyScreen() {
       {!isCurrentTier && (
         <View style={styles.comparisonBanner}>
           <View style={styles.comparisonSide}>
-            <Text style={styles.comparisonTierLabel}>{currentTier.name} (you)</Text>
+            <Text style={styles.comparisonTierLabel}>{currentTier.label} (you)</Text>
             <Text style={styles.comparisonValue}>{currentTier.cashbackPct}% cashback</Text>
             <Text style={styles.comparisonValue}>{currentTier.pointsMultiplier}× points</Text>
           </View>
           <Ionicons name="arrow-forward" size={16} color="#9CA3AF" />
           <View style={styles.comparisonSide}>
             <Text style={[styles.comparisonTierLabel, { color: "#7C3AED" }]}>
-              {selectedTierName}
+              {selectedTier.label}
             </Text>
             <Text style={[styles.comparisonValue, { color: "#7C3AED" }]}>
               {selectedTier.cashbackPct}% cashback
@@ -365,7 +388,7 @@ export default function LoyaltyScreen() {
         <View style={styles.multiplierNote}>
           <Ionicons name="information-circle-outline" size={14} color="#7C3AED" />
           <Text style={styles.multiplierNoteText}>
-            Your {currentTier.name} multiplier of {currentTier.pointsMultiplier}× applies to all
+            Your {currentTier.label} multiplier of {currentTier.pointsMultiplier}× applies to all
             card spend earnings.
           </Text>
         </View>

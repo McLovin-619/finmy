@@ -1,10 +1,12 @@
 import { router } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
-import { MOCK_ALLOWANCES } from "@/lib/mock-data";
+import { apiFetch } from "@/lib/api-client";
+import { type ApiAllowance, toDisplay } from "@/lib/allowance-display";
 
 const SETTINGS_ITEMS = [
   { icon: "gift-outline" as const, label: "Student & Corporate Deals", route: "/deals" },
@@ -16,6 +18,16 @@ const SETTINGS_ITEMS = [
 export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const { signOut } = useAuth();
+
+  const { data: rawAllowances = [] } = useQuery({
+    queryKey: ["allowances"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/allowances");
+      if (!res.ok) throw new Error("Failed to fetch allowances");
+      return ((await res.json()) as { allowances: ApiAllowance[] }).allowances;
+    },
+  });
+  const allowances = useMemo(() => rawAllowances.map(toDisplay), [rawAllowances]);
 
   return (
     <ScrollView style={styles.root} showsVerticalScrollIndicator={false}>
@@ -40,7 +52,11 @@ export default function MoreScreen() {
           </View>
         </View>
 
-        {MOCK_ALLOWANCES.slice(0, 3).map((member, index) => (
+        {allowances.length === 0 && (
+          <Text style={styles.emptyText}>No allowances set up yet</Text>
+        )}
+
+        {allowances.slice(0, 3).map((member, index) => (
           <View key={member.id}>
             {index > 0 && <View style={styles.divider} />}
             <View style={styles.memberRow}>
@@ -76,8 +92,8 @@ export default function MoreScreen() {
             </View>
           </View>
         ))}
-        {MOCK_ALLOWANCES.length > 3 && (
-          <Text style={styles.moreCount}>+{MOCK_ALLOWANCES.length - 3} more</Text>
+        {allowances.length > 3 && (
+          <Text style={styles.moreCount}>+{allowances.length - 3} more</Text>
         )}
       </TouchableOpacity>
 
@@ -170,6 +186,13 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     textAlign: "center",
     marginTop: 8,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+    paddingVertical: 8,
   },
   divider: { height: 1, backgroundColor: "#F9FAFB", marginVertical: 4 },
   memberRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, gap: 12 },
