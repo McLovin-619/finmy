@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
+import { formatHalalasSar } from "@finmy/lib";
 import { apiFetch } from "@/lib/api-client";
 
 // ─── API types ────────────────────────────────────────────────────────────────
@@ -47,15 +48,6 @@ type HoldingsResp = {
   totalCostHalalas: number;
   totalUnrealizedPlHalalas: number;
 };
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function fmtSar(halalas: number, decimals = 2): string {
-  return (halalas / 100).toLocaleString("en-SA", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-}
 
 type Tab = "market" | "holdings";
 
@@ -119,7 +111,7 @@ export default function StocksScreen() {
       {/* Portfolio summary */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryLabel}>Portfolio value</Text>
-        <Text style={styles.summaryValue}>SAR {fmtSar(totalValue)}</Text>
+        <Text style={styles.summaryValue}>SAR {formatHalalasSar(totalValue)}</Text>
         <View style={styles.summaryPlRow}>
           <Ionicons
             name={totalPL >= 0 ? "trending-up" : "trending-down"}
@@ -127,7 +119,7 @@ export default function StocksScreen() {
             color={totalPL >= 0 ? "#10B981" : "#EF4444"}
           />
           <Text style={[styles.summaryPl, { color: totalPL >= 0 ? "#10B981" : "#EF4444" }]}>
-            {totalPL >= 0 ? "+" : "−"}SAR {fmtSar(Math.abs(totalPL))} ({totalPlPct >= 0 ? "+" : ""}
+            {totalPL >= 0 ? "+" : "−"}SAR {formatHalalasSar(Math.abs(totalPL))} ({totalPlPct >= 0 ? "+" : ""}
             {totalPlPct.toFixed(2)}%)
           </Text>
           <Text style={styles.summaryPlLabel}>all time</Text>
@@ -227,7 +219,7 @@ function QuoteRow({ quote }: { quote: Quote }) {
         </Text>
       </View>
       <View style={styles.rowRight}>
-        <Text style={styles.rowPrice}>SAR {fmtSar(quote.priceHalalas)}</Text>
+        <Text style={styles.rowPrice}>SAR {formatHalalasSar(quote.priceHalalas)}</Text>
         <View style={[styles.rowPill, { backgroundColor: up ? "#ECFDF5" : "#FEF2F2" }]}>
           <Text style={[styles.rowPillText, { color: up ? "#10B981" : "#EF4444" }]}>
             {up ? "▲" : "▼"} {Math.abs(quote.changePct).toFixed(2)}%
@@ -250,13 +242,13 @@ function HoldingRow({ holding }: { holding: Holding }) {
       <View style={styles.rowMid}>
         <Text style={styles.rowSymbol}>{holding.symbol.replace(".SR", "")}</Text>
         <Text style={styles.rowName} numberOfLines={1}>
-          {shares.toFixed(4)} sh · avg SAR {fmtSar(holding.avgCostHalalas)}
+          {shares.toFixed(4)} sh · avg SAR {formatHalalasSar(holding.avgCostHalalas)}
         </Text>
       </View>
       <View style={styles.rowRight}>
-        <Text style={styles.rowPrice}>SAR {fmtSar(holding.valueHalalas)}</Text>
+        <Text style={styles.rowPrice}>SAR {formatHalalasSar(holding.valueHalalas)}</Text>
         <Text style={[styles.rowPl, { color: up ? "#10B981" : "#EF4444" }]}>
-          {up ? "+" : "−"}SAR {fmtSar(Math.abs(holding.unrealizedPlHalalas))} (
+          {up ? "+" : "−"}SAR {formatHalalasSar(Math.abs(holding.unrealizedPlHalalas))} (
           {up ? "+" : ""}
           {holding.unrealizedPlPct.toFixed(2)}%)
         </Text>

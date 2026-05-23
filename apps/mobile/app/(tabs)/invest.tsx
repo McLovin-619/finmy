@@ -6,6 +6,7 @@ import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableO
 import { Defs, LinearGradient as SvgGradient, Path, Stop, Svg } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
+import { formatHalalasSar } from "@finmy/lib";
 import { apiFetch } from "@/lib/api-client";
 import {
   MOCK_PORTFOLIO,
@@ -58,16 +59,17 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 type Range = "1M" | "3M" | "6M" | "1Y";
 const RANGE_SLICE: Record<Range, number> = { "1M": 2, "3M": 4, "6M": 7, "1Y": 12 };
 
-// ─── Market spotlight types + helpers ─────────────────────────────────────────
+// ─── Market spotlight types ───────────────────────────────────────────────────
 
-type SpotlightQuote = {
+type SpotlightHistory = { date: string; closeHalalas: number };
+type Sparkline = {
   symbol: string;
   name: string;
+  exchange: string;
   priceHalalas: number;
   changePct: number;
+  history: SpotlightHistory[];
 };
-type SpotlightHistory = { date: string; closeHalalas: number };
-type SpotlightDetail = { quote: SpotlightQuote; history: SpotlightHistory[] };
 
 // ─── Area chart (same cubic-bezier technique as investments.tsx) ──────────────
 
@@ -118,7 +120,7 @@ function AreaChart({ data, color }: { data: PortfolioDataPoint[]; color: string 
   );
 }
 
-// ─── Market spotlight (3 random stocks, expand/collapse) ─────────────────────
+// ─── Market spotlight — batched sparklines fed by /api/stocks/sparklines ─────
 
 const SPOTLIGHT_CARD_WIDTH = 128;
 
@@ -148,39 +150,21 @@ function MiniSparkline({ data, color }: { data: SpotlightHistory[]; color: strin
   );
 }
 
-function SpotlightCard({ symbol }: { symbol: string }) {
-  const { data, isLoading } = useQuery({
-    queryKey: ["stocks", "detail", symbol, "1M"],
-    queryFn: async () => {
-      const res = await apiFetch(`/api/stocks/${encodeURIComponent(symbol)}?range=1M`);
-      if (!res.ok) throw new Error("spotlight failed");
-      return res.json() as Promise<SpotlightDetail>;
-    },
-    refetchInterval: 60_000,
-  });
-
-  const q = data?.quote;
-  const up = (q?.changePct ?? 0) >= 0;
+function SpotlightCard({ sparkline }: { sparkline: Sparkline }) {
+  const up = sparkline.changePct >= 0;
   const color = up ? "#10B981" : "#EF4444";
-
   return (
     <TouchableOpacity
       style={styles.spotlightCard}
       activeOpacity={0.8}
-      onPress={() => router.push(`/stocks/${encodeURIComponent(symbol)}` as any)}
+      onPress={() => router.push(`/stocks/${encodeURIComponent(sparkline.symbol)}` as any)}
     >
-      <Text style={styles.spotlightSym}>{symbol.replace(".SR", "")}</Text>
-      {isLoading || !q ? (
-        <ActivityIndicator size="small" color="#7C3AED" style={{ marginVertical: 8 }} />
-      ) : (
-        <>
-          <MiniSparkline data={data?.history ?? []} color={color} />
-          <Text style={styles.spotlightPrice}>SAR {(q.priceHalalas / 100).toFixed(2)}</Text>
-          <Text style={[styles.spotlightChange, { color }]}>
-            {up ? "▲" : "▼"} {Math.abs(q.changePct).toFixed(2)}%
-          </Text>
-        </>
-      )}
+      <Text style={styles.spotlightSym}>{sparkline.symbol.replace(".SR", "")}</Text>
+      <MiniSparkline data={sparkline.history} color={color} />
+      <Text style={styles.spotlightPrice}>SAR {formatHalalasSar(sparkline.priceHalalas)}</Text>
+      <Text style={[styles.spotlightChange, { color }]}>
+        {up ? "▲" : "▼"} {Math.abs(sparkline.changePct).toFixed(2)}%
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -192,17 +176,17 @@ export default function InvestScreen() {
   const [range, setRange] = useState<Range>("1Y");
   const { data: investData, isLoading: investLoading } = useInvestments();
 
-  // Market spotlight — horizontal scroller of all watchlist symbols.
-  const { data: watchlistData } = useQuery({
-    queryKey: ["stocks", "watchlist"],
+  // Market spotlight — one batched fetch covers all watchlist sparklines.
+  const { data: sparklineData } = useQuery({
+    queryKey: ["stocks", "sparklines", "1M"],
     queryFn: async () => {
-      const res = await apiFetch("/api/stocks/watchlist");
-      if (!res.ok) throw new Error("watchlist failed");
-      return res.json() as Promise<{ quotes: SpotlightQuote[] }>;
+      const res = await apiFetch("/api/stocks/sparklines?range=1M");
+      if (!res.ok) throw new Error("sparklines failed");
+      return res.json() as Promise<{ sparklines: Sparkline[] }>;
     },
     refetchInterval: 60_000,
   });
-  const spotlightSymbols = watchlistData?.quotes?.map((q) => q.symbol) ?? [];
+  const sparklines = sparklineData?.sparklines ?? [];
 
   const activeSchedules = investData?.schedules.filter((s) => s.status === "active") ?? [];
   const monthlyHalalas = investData?.summary.totalMonthlyHalalas ?? 0;
@@ -326,8 +310,8 @@ export default function InvestScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.spotlightScroll}
           >
-            {spotlightSymbols.map((sym) => (
-              <SpotlightCard key={sym} symbol={sym} />
+            {sparklines.map((s) => (
+              <SpotlightCard key={s.symbol} sparkline={s} />
             ))}
           </ScrollView>
         </View>

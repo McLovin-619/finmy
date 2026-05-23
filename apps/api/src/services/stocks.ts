@@ -1,12 +1,10 @@
 import YahooFinance from "yahoo-finance2";
 
-// v3 is class-based; the default export's static methods are deprecated.
+// v3 is class-based; the default-import static methods are deprecated.
 const yahooFinance = new YahooFinance();
-// Suppress the noisy survey/historical-RIP notices that print on first call.
 yahooFinance._notices.suppress(["yahooSurvey", "ripHistorical"]);
 
-// SAR is pegged to USD at 3.75; we use this fixed rate to convert US-listed
-// stock prices into SAR halalas so the wallet math stays in one currency.
+// SAR is pegged to USD at 3.75 — fixed rate keeps wallet math in one currency.
 const USD_TO_SAR = 3.75;
 
 type WatchlistEntry = {
@@ -14,7 +12,6 @@ type WatchlistEntry = {
   name: string;
   exchange: "NASDAQ" | "NYSE" | "Tadawul";
   sector: string;
-  // Yahoo's native currency for this symbol — what we receive from quote()
   nativeCurrency: "USD" | "SAR";
 };
 
@@ -50,14 +47,51 @@ export type Quote = {
   marketState: string;
 };
 
-// In-memory quote cache. Yahoo rate-limits aggressively when polled too hard;
-// 30 s is enough to give a "live" feel without thrashing them.
-const CACHE_TTL_MS = 30_000;
+export type HistoryPoint = { date: string; closeHalalas: number };
+
+// Yahoo rate-limits aggressively when polled hard; cache fresh quotes for 30s
+// and serve stale entries indefinitely as a fallback when a refresh fails.
+const QUOTE_TTL_MS = 30_000;
+// History barely moves intraday — 10-min TTL is enough to make sparklines look
+// live without hammering Yahoo's chart() endpoint per client.
+const HISTORY_TTL_MS = 10 * 60_000;
+
 const quoteCache = new Map<string, { quote: Quote; fetchedAt: number }>();
+const historyCache = new Map<string, { history: HistoryPoint[]; fetchedAt: number }>();
 
 function toHalalas(price: number, native: "USD" | "SAR"): number {
   const sar = native === "USD" ? price * USD_TO_SAR : price;
   return Math.round(sar * 100);
+}
+
+// reason: yahoo-finance2's Quote union (QuoteEquity, QuoteCryptoCurrency,
+// QuoteECNQuote, …) has no shared structural overlap, so narrowing each
+// variant before reading regularMarketPrice would be more noise than value.
+type RawQuoteLike = {
+  symbol?: string;
+  regularMarketPrice?: number;
+  regularMarketPreviousClose?: number;
+  regularMarketChangePercent?: number;
+  marketState?: string;
+};
+
+function buildQuote(raw: RawQuoteLike): Quote | null {
+  if (!raw.symbol) return null;
+  const meta = WATCHLIST_BY_SYMBOL.get(raw.symbol);
+  if (!meta) return null;
+  const price = raw.regularMarketPrice ?? 0;
+  const prevClose = raw.regularMarketPreviousClose ?? price;
+  return {
+    symbol: raw.symbol,
+    name: meta.name,
+    exchange: meta.exchange,
+    sector: meta.sector,
+    priceHalalas: toHalalas(price, meta.nativeCurrency),
+    previousCloseHalalas: toHalalas(prevClose, meta.nativeCurrency),
+    changeHalalas: toHalalas(price - prevClose, meta.nativeCurrency),
+    changePct: raw.regularMarketChangePercent ?? 0,
+    marketState: raw.marketState ?? "CLOSED",
+  };
 }
 
 export function isWatchlistSymbol(symbol: string): boolean {
@@ -75,7 +109,7 @@ export async function getQuotes(symbols: string[]): Promise<Quote[]> {
 
   for (const sym of symbols) {
     const cached = quoteCache.get(sym);
-    if (cached && now - cached.fetchedAt < CACHE_TTL_MS) {
+    if (cached && now - cached.fetchedAt < QUOTE_TTL_MS) {
       fresh.push(cached.quote);
     } else {
       stale.push(sym);
@@ -84,27 +118,23 @@ export async function getQuotes(symbols: string[]): Promise<Quote[]> {
 
   if (stale.length === 0) return fresh;
 
-  const rawQuotes = await yahooFinance.quote(stale);
-  const list = Array.isArray(rawQuotes) ? rawQuotes : [rawQuotes];
-
-  for (const raw of list) {
-    const meta = WATCHLIST_BY_SYMBOL.get(raw.symbol);
-    if (!meta) continue;
-    const price = raw.regularMarketPrice ?? 0;
-    const prevClose = raw.regularMarketPreviousClose ?? price;
-    const quote: Quote = {
-      symbol: raw.symbol,
-      name: meta.name,
-      exchange: meta.exchange,
-      sector: meta.sector,
-      priceHalalas: toHalalas(price, meta.nativeCurrency),
-      previousCloseHalalas: toHalalas(prevClose, meta.nativeCurrency),
-      changeHalalas: toHalalas(price - prevClose, meta.nativeCurrency),
-      changePct: raw.regularMarketChangePercent ?? 0,
-      marketState: raw.marketState ?? "CLOSED",
-    };
-    quoteCache.set(raw.symbol, { quote, fetchedAt: now });
-    fresh.push(quote);
+  try {
+    const rawQuotes = await yahooFinance.quote(stale);
+    const list = (Array.isArray(rawQuotes) ? rawQuotes : [rawQuotes]) as RawQuoteLike[];
+    for (const raw of list) {
+      const quote = buildQuote(raw);
+      if (!quote) continue;
+      quoteCache.set(quote.symbol, { quote, fetchedAt: now });
+      fresh.push(quote);
+    }
+  } catch (err) {
+    // Stale-while-revalidate: a transient Yahoo blip shouldn't 503 the whole
+    // watchlist. Serve any previously-cached values for the stale symbols.
+    console.error("yahoo quote refresh failed, serving stale", err);
+    for (const sym of stale) {
+      const cached = quoteCache.get(sym);
+      if (cached) fresh.push(cached.quote);
+    }
   }
 
   return fresh;
@@ -115,24 +145,64 @@ export async function getQuote(symbol: string): Promise<Quote | null> {
   return quote ?? null;
 }
 
-export type HistoryPoint = { date: string; closeHalalas: number };
-
-// Yahoo's chart() returns OHLC bars between period1/period2.
-// rangeDays: 30 → daily bars for 1M; 90 → 3M; 180 → 6M; 365 → 1Y.
 export async function getHistory(symbol: string, rangeDays: number): Promise<HistoryPoint[]> {
   const meta = WATCHLIST_BY_SYMBOL.get(symbol);
   if (!meta) return [];
 
-  const period2 = new Date();
-  const period1 = new Date(period2.getTime() - rangeDays * 24 * 60 * 60 * 1000);
-  const interval = rangeDays <= 30 ? "1d" : rangeDays <= 180 ? "1d" : "1wk";
+  const cacheKey = `${symbol}:${rangeDays}`;
+  const now = Date.now();
+  const cached = historyCache.get(cacheKey);
+  if (cached && now - cached.fetchedAt < HISTORY_TTL_MS) return cached.history;
 
-  const result = await yahooFinance.chart(symbol, { period1, period2, interval });
+  const period2 = new Date(now);
+  const period1 = new Date(now - rangeDays * 24 * 60 * 60 * 1000);
+  const interval = rangeDays <= 180 ? "1d" : "1wk";
 
-  return result.quotes
-    .filter((q) => q.close != null)
-    .map((q) => ({
-      date: q.date.toISOString(),
-      closeHalalas: toHalalas(q.close as number, meta.nativeCurrency),
-    }));
+  try {
+    const result = await yahooFinance.chart(symbol, { period1, period2, interval });
+    const history: HistoryPoint[] = result.quotes
+      .filter((q) => q.close != null)
+      .map((q) => ({
+        date: q.date.toISOString(),
+        closeHalalas: toHalalas(q.close as number, meta.nativeCurrency),
+      }));
+    historyCache.set(cacheKey, { history, fetchedAt: now });
+    return history;
+  } catch (err) {
+    console.error("yahoo chart refresh failed, serving stale", err);
+    return cached?.history ?? [];
+  }
+}
+
+export type Sparkline = {
+  symbol: string;
+  name: string;
+  exchange: string;
+  priceHalalas: number;
+  changePct: number;
+  history: HistoryPoint[];
+};
+
+// Batched feed for the mobile invest tab's spotlight strip — one round-trip
+// instead of 15. Reuses both caches so the per-client cost stays flat.
+export async function getSparklines(rangeDays: number): Promise<Sparkline[]> {
+  const symbols = WATCHLIST.map((w) => w.symbol);
+  const [quotes, histories] = await Promise.all([
+    getQuotes(symbols),
+    Promise.all(symbols.map((s) => getHistory(s, rangeDays))),
+  ]);
+  const quoteBySymbol = new Map(quotes.map((q) => [q.symbol, q]));
+  return symbols.flatMap((symbol, idx) => {
+    const q = quoteBySymbol.get(symbol);
+    const meta = WATCHLIST_BY_SYMBOL.get(symbol);
+    if (!q || !meta) return [];
+    return [{
+      symbol,
+      name: meta.name,
+      exchange: meta.exchange,
+      priceHalalas: q.priceHalalas,
+      changePct: q.changePct,
+      history: histories[idx],
+    }];
+  });
 }

@@ -3,10 +3,12 @@ import {
   auditLogs,
   digitalWallets,
   stockHoldings,
+  stockOrderSideEnum,
   stockOrders,
   transactions,
 } from "@finmy/db/schema";
 import { sessionMiddleware } from "@finmy/auth";
+import { formatHalalasSar } from "@finmy/lib";
 import { zValidator } from "@hono/zod-validator";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { Hono } from "hono";
@@ -16,23 +18,23 @@ import {
   getHistory,
   getQuote,
   getQuotes,
+  getSparklines,
   getWatchlistMeta,
   isWatchlistSymbol,
 } from "../services/stocks";
 
 const SHARES_MICRO = 1_000_000;
-// Convert a SAR halalas notional + per-share halalas price to fractional micro-shares.
 function sarToSharesMicro(amountHalalas: number, priceHalalas: number): number {
   return Math.floor((amountHalalas * SHARES_MICRO) / priceHalalas);
 }
-function sharesMicroToSar(sharesMicro: number, priceHalalas: number): number {
+function sharesMicroToHalalas(sharesMicro: number, priceHalalas: number): number {
   return Math.floor((sharesMicro * priceHalalas) / SHARES_MICRO);
 }
 
 const orderSchema = z
   .object({
     symbol: z.string().min(1),
-    side: z.enum(["buy", "sell"]),
+    side: z.enum(stockOrderSideEnum.enumValues),
     amountSar: z.number().positive().multipleOf(0.01),
   })
   .refine((d) => isWatchlistSymbol(d.symbol), { message: "Symbol not in watchlist" });
@@ -48,7 +50,6 @@ const RANGE_DAYS: Record<z.infer<typeof historyRange>, number> = {
 export const stockRoutes = new Hono()
   .use("*", sessionMiddleware)
 
-  // GET /api/stocks/watchlist — curated list with live quotes
   .get("/watchlist", async (c) => {
     try {
       const quotes = await getQuotes(WATCHLIST.map((w) => w.symbol));
@@ -59,7 +60,21 @@ export const stockRoutes = new Hono()
     }
   })
 
-  // GET /api/stocks/holdings — user holdings enriched with live price + P/L
+  .get(
+    "/sparklines",
+    zValidator("query", z.object({ range: historyRange.default("1M") })),
+    async (c) => {
+      const { range } = c.req.valid("query");
+      try {
+        const sparklines = await getSparklines(RANGE_DAYS[range]);
+        return c.json({ sparklines, range });
+      } catch (err) {
+        console.error("sparklines failed", err);
+        return c.json({ error: "Market data unavailable" }, 503);
+      }
+    },
+  )
+
   .get("/holdings", async (c) => {
     const userId = c.get("user").id;
 
@@ -87,8 +102,8 @@ export const stockRoutes = new Hono()
       const q = quoteBySymbol.get(r.symbol);
       const meta = getWatchlistMeta(r.symbol);
       const priceHalalas = q?.priceHalalas ?? r.avgCostHalalas;
-      const valueHalalas = sharesMicroToSar(r.sharesMicro, priceHalalas);
-      const costHalalas = sharesMicroToSar(r.sharesMicro, r.avgCostHalalas);
+      const valueHalalas = sharesMicroToHalalas(r.sharesMicro, priceHalalas);
+      const costHalalas = sharesMicroToHalalas(r.sharesMicro, r.avgCostHalalas);
       totalValueHalalas += valueHalalas;
       totalCostHalalas += costHalalas;
       return {
@@ -114,7 +129,6 @@ export const stockRoutes = new Hono()
     });
   })
 
-  // GET /api/stocks/orders — recent trade history for the user
   .get("/orders", async (c) => {
     const userId = c.get("user").id;
     const rows = await db
@@ -137,13 +151,9 @@ export const stockRoutes = new Hono()
     });
   })
 
-  // GET /api/stocks/:symbol — quote + history for a single ticker
   .get(
     "/:symbol",
-    zValidator(
-      "query",
-      z.object({ range: historyRange.default("1M") }),
-    ),
+    zValidator("query", z.object({ range: historyRange.default("1M") })),
     async (c) => {
       const symbol = c.req.param("symbol");
       if (!isWatchlistSymbol(symbol)) {
@@ -165,27 +175,25 @@ export const stockRoutes = new Hono()
     },
   )
 
-  // POST /api/stocks/orders — execute a buy or sell at the live quote
   .post("/orders", zValidator("json", orderSchema), async (c) => {
     const userId = c.get("user").id;
     const { symbol, side, amountSar } = c.req.valid("json");
     const amountHalalas = Math.round(amountSar * 100);
 
-    const quote = await getQuote(symbol).catch(() => null);
+    const [quote, wallet, existingHolding] = await Promise.all([
+      getQuote(symbol).catch(() => null),
+      db.query.digitalWallets.findFirst({ where: eq(digitalWallets.userId, userId) }),
+      db.query.stockHoldings.findFirst({
+        where: and(eq(stockHoldings.userId, userId), eq(stockHoldings.symbol, symbol)),
+      }),
+    ]);
+
     if (!quote || quote.priceHalalas <= 0) {
       return c.json({ error: "Live quote unavailable, try again" }, 503);
     }
-    const priceHalalas = quote.priceHalalas;
-
-    const wallet = await db.query.digitalWallets.findFirst({
-      where: eq(digitalWallets.userId, userId),
-    });
     if (!wallet) return c.json({ error: "Wallet not found" }, 404);
 
-    const existingHolding = await db.query.stockHoldings.findFirst({
-      where: and(eq(stockHoldings.userId, userId), eq(stockHoldings.symbol, symbol)),
-    });
-
+    const priceHalalas = quote.priceHalalas;
     const sharesMicroDelta = sarToSharesMicro(amountHalalas, priceHalalas);
     if (sharesMicroDelta <= 0) {
       return c.json({ error: "Amount too small for one micro-share" }, 422);
@@ -204,8 +212,7 @@ export const stockRoutes = new Hono()
 
     const result = await db.transaction(async (tx) => {
       if (side === "buy") {
-        // Atomic balance check + debit — gte() guard inside the same statement
-        // blocks double-spend if two orders race.
+        // gte() guard inside the UPDATE blocks double-spend if two buys race.
         const [updatedWallet] = await tx
           .update(digitalWallets)
           .set({
@@ -242,7 +249,7 @@ export const stockRoutes = new Hono()
           });
         }
       } else {
-        // SELL — credit wallet, reduce or delete holding
+        const sellHolding = existingHolding!;
         await tx
           .update(digitalWallets)
           .set({
@@ -251,14 +258,14 @@ export const stockRoutes = new Hono()
           })
           .where(eq(digitalWallets.id, wallet.id));
 
-        const remaining = existingHolding!.sharesMicro - sharesMicroDelta;
+        const remaining = sellHolding.sharesMicro - sharesMicroDelta;
         if (remaining <= 0) {
-          await tx.delete(stockHoldings).where(eq(stockHoldings.id, existingHolding!.id));
+          await tx.delete(stockHoldings).where(eq(stockHoldings.id, sellHolding.id));
         } else {
           await tx
             .update(stockHoldings)
             .set({ sharesMicro: remaining, updatedAt: now })
-            .where(eq(stockHoldings.id, existingHolding!.id));
+            .where(eq(stockHoldings.id, sellHolding.id));
         }
       }
 
@@ -282,7 +289,7 @@ export const stockRoutes = new Hono()
         status: "completed",
         description: `${side === "buy" ? "Buy" : "Sell"} ${symbol} · ${(
           sharesMicroDelta / SHARES_MICRO
-        ).toFixed(4)} sh @ SAR ${(priceHalalas / 100).toFixed(2)}`,
+        ).toFixed(4)} sh @ SAR ${formatHalalasSar(priceHalalas)}`,
         occurredAt: now,
       });
 
@@ -298,12 +305,7 @@ export const stockRoutes = new Hono()
               walletBalanceHalalas: wallet.balanceHalalas,
             }
           : { walletBalanceHalalas: wallet.balanceHalalas },
-        afterState: {
-          symbol,
-          sharesMicroDelta,
-          priceHalalas,
-          amountHalalas,
-        },
+        afterState: { symbol, sharesMicroDelta, priceHalalas, amountHalalas },
         ipAddress,
         userAgent,
         createdAt: now,
@@ -314,14 +316,6 @@ export const stockRoutes = new Hono()
 
     return c.json({
       success: true,
-      order: {
-        id: result.id,
-        symbol: result.symbol,
-        side: result.side,
-        sharesMicro: result.sharesMicro,
-        priceHalalas: result.priceHalalas,
-        amountHalalas: result.amountHalalas,
-        executedAt: result.executedAt.toISOString(),
-      },
+      order: { ...result, executedAt: result.executedAt.toISOString() },
     });
   });

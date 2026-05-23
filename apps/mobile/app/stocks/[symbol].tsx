@@ -19,6 +19,7 @@ import {
 import { Defs, LinearGradient as SvgGradient, Path, Stop, Svg } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatHalalasSar } from "@finmy/lib";
 import { apiFetch } from "@/lib/api-client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -57,15 +58,6 @@ type Holding = {
 };
 
 type WalletResp = { wallet: { balanceSar: number } };
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function fmtSar(halalas: number, decimals = 2): string {
-  return (halalas / 100).toLocaleString("en-SA", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-}
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -212,7 +204,7 @@ export default function StockDetailScreen() {
         ) : (
           <>
             <View style={styles.priceBlock}>
-              <Text style={styles.priceMain}>SAR {fmtSar(quote.priceHalalas)}</Text>
+              <Text style={styles.priceMain}>SAR {formatHalalasSar(quote.priceHalalas)}</Text>
               <View style={[styles.changePill, { backgroundColor: up ? "#ECFDF5" : "#FEF2F2" }]}>
                 <Ionicons
                   name={up ? "trending-up" : "trending-down"}
@@ -220,7 +212,7 @@ export default function StockDetailScreen() {
                   color={color}
                 />
                 <Text style={[styles.changeText, { color }]}>
-                  {up ? "+" : "−"}SAR {fmtSar(Math.abs(quote.changeHalalas))} (
+                  {up ? "+" : "−"}SAR {formatHalalasSar(Math.abs(quote.changeHalalas))} (
                   {up ? "+" : ""}
                   {quote.changePct.toFixed(2)}%)
                 </Text>
@@ -263,11 +255,11 @@ export default function StockDetailScreen() {
                   {(myHolding.sharesMicro / 1_000_000).toFixed(4)} sh
                 </Text>
                 <Text style={styles.positionAvg}>
-                  Avg cost SAR {fmtSar(myHolding.avgCostHalalas)}
+                  Avg cost SAR {formatHalalasSar(myHolding.avgCostHalalas)}
                 </Text>
               </View>
               <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.positionValue}>SAR {fmtSar(myHolding.valueHalalas)}</Text>
+                <Text style={styles.positionValue}>SAR {formatHalalasSar(myHolding.valueHalalas)}</Text>
                 <Text
                   style={[
                     styles.positionPl,
@@ -275,7 +267,7 @@ export default function StockDetailScreen() {
                   ]}
                 >
                   {myHolding.unrealizedPlHalalas >= 0 ? "+" : "−"}SAR{" "}
-                  {fmtSar(Math.abs(myHolding.unrealizedPlHalalas))} (
+                  {formatHalalasSar(Math.abs(myHolding.unrealizedPlHalalas))} (
                   {myHolding.unrealizedPlPct >= 0 ? "+" : ""}
                   {myHolding.unrealizedPlPct.toFixed(2)}%)
                 </Text>
@@ -323,11 +315,11 @@ export default function StockDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Order modal */}
-      {quote && (
+      {/* Re-mount per open via key={orderModal} so amount input starts fresh. */}
+      {quote && orderModal && (
         <OrderModal
-          visible={orderModal !== null}
-          side={orderModal ?? "buy"}
+          key={orderModal}
+          side={orderModal}
           symbol={symbol}
           quote={quote}
           holding={myHolding}
@@ -343,7 +335,6 @@ export default function StockDetailScreen() {
 // ─── Order modal ──────────────────────────────────────────────────────────────
 
 function OrderModal({
-  visible,
   side,
   symbol,
   quote,
@@ -352,7 +343,6 @@ function OrderModal({
   onClose,
   onSuccess,
 }: {
-  visible: boolean;
   side: "buy" | "sell";
   symbol: string;
   quote: Quote;
@@ -395,17 +385,8 @@ function OrderModal({
     },
   });
 
-  // Reset input each time the modal opens for a fresh entry.
-  const onShow = () => setAmount("");
-
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={onClose}
-      onShow={onShow}
-    >
+    <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={modalStyles.backdrop}
@@ -417,7 +398,7 @@ function OrderModal({
             {side === "buy" ? "Buy" : "Sell"} {symbol.replace(".SR", "")}
           </Text>
           <Text style={modalStyles.sub}>
-            Live price · SAR {fmtSar(quote.priceHalalas)}
+            Live price · SAR {formatHalalasSar(quote.priceHalalas)}
           </Text>
 
           <View style={modalStyles.amountWrap}>

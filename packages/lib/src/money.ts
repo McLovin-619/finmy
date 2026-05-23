@@ -15,3 +15,10 @@ export function formatMoney({ amount, currency }: Money): string {
 export function sarMinorUnits(riyals: number): Money {
   return { amount: Math.round(riyals * 100), currency: "SAR" };
 }
+
+export function formatHalalasSar(halalas: number, decimals = 2): string {
+  return (halalas / 100).toLocaleString("en-SA", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
