@@ -103,6 +103,30 @@ export const auth = betterAuth({
               lifetimeSpendHalalas: 0,
             }),
           ]);
+
+          // Welcome email is best-effort — never block signup if Resend is down.
+          if (env.RESEND_API_KEY) {
+            const firstName = user.name?.split(" ")[0] ?? "there";
+            try {
+              await fetch("https://api.resend.com/emails", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${env.RESEND_API_KEY}`,
+                },
+                body: JSON.stringify({
+                  from: "finmy <onboarding@resend.dev>",
+                  to: user.email,
+                  subject: "Welcome to finmy",
+                  html: `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#1A1426"><h1 style="font-size:22px;margin:0 0 12px">Welcome to finmy, ${firstName}.</h1><p style="font-size:14px;color:#6B7280;line-height:1.6;margin:0 0 16px">Your wallet is ready. From here you can send money, automate allowances, schedule investments, and track every subscription and bill in one place.</p><p style="font-size:14px;color:#6B7280;line-height:1.6;margin:0 0 24px">No setup needed — just open the app and you are good to go.</p><p style="font-size:12px;color:#9CA3AF;margin:0">If this was not you, reply to this email and we will lock the account.</p></div>`,
+                }),
+              });
+            } catch (err) {
+              console.error(`[auth] welcome email failed for ${user.email}`, err);
+            }
+          } else {
+            console.log(`[auth] (no RESEND_API_KEY) skipping welcome email for ${user.email}`);
+          }
         },
       },
     },
