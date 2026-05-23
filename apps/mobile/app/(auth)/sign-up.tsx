@@ -50,7 +50,10 @@ export default function SignUpScreen() {
       Alert.alert("Sign up failed", err instanceof Error ? err.message : "Please try again.");
       return;
     }
-    router.replace("/onboarding" as any);
+    router.replace({
+      pathname: "/(auth)/verify-email",
+      params: { email: data.email },
+    } as any);
   }
 
   return (

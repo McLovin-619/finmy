@@ -102,6 +102,8 @@ function RootLayout() {
                 <Stack.Screen name="cards" />
                 <Stack.Screen name="allowances" />
                 <Stack.Screen name="loyalty" />
+                <Stack.Screen name="stocks" />
+                <Stack.Screen name="stocks/[symbol]" />
                 <Stack.Screen name="reports" />
                 <Stack.Screen name="store" />
                 <Stack.Screen name="deals" />

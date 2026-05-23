@@ -2,15 +2,29 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
-  MOCK_LOYALTY,
-  MOCK_POINTS_ACTIVITY,
-  MOCK_TIERS,
-  type Tier,
-  type TierName,
-} from "@/lib/mock-data";
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-client";
+import { MOCK_TIERS, type Tier, type TierName } from "@/lib/mock-data";
+
+type LoyaltyApiResponse = {
+  tier: string;
+  pointsBalance: number;
+  lifetimePoints: number;
+  lifetimeDepositSar: number;
+  lifetimeSpendSar: number;
+  tierBenefits: { adminFeeDiscount: number; cashbackPct: number; withdrawalLimitSar: number };
+  createdAt: string;
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -97,15 +111,40 @@ const EARN_METHODS = [
 
 export default function LoyaltyScreen() {
   const insets = useSafeAreaInsets();
-  const [selectedTierName, setSelectedTierName] = useState<TierName>(MOCK_LOYALTY.currentTier);
 
-  const currentTier = getTier(MOCK_LOYALTY.currentTier);
-  const nextTier = getNextTier(MOCK_LOYALTY.currentTier);
-  const progress = tierProgress(MOCK_LOYALTY.totalPoints, currentTier, nextTier);
-  const ptsToNext = nextTier ? nextTier.pointsRequired - MOCK_LOYALTY.totalPoints : 0;
+  const { data: loyaltyData, isLoading } = useQuery({
+    queryKey: ["loyalty"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/loyalty");
+      if (!res.ok) throw new Error("Failed to fetch loyalty");
+      return res.json() as Promise<LoyaltyApiResponse>;
+    },
+  });
+
+  const currentTierName = (loyaltyData?.tier ?? "standard") as TierName;
+  const totalPoints = loyaltyData?.pointsBalance ?? 0;
+  const [userPickedTier, setUserPickedTier] = useState<TierName | null>(null);
+  const selectedTierName = userPickedTier ?? currentTierName;
+
+  const tierIdx = MOCK_TIERS.findIndex((t) => t.name === currentTierName);
+  const currentTier = getTier(currentTierName);
+  const nextTier = getNextTier(currentTierName);
+  const progress = tierProgress(totalPoints, currentTier, nextTier);
+  const ptsToNext = nextTier ? nextTier.pointsRequired - totalPoints : 0;
+  const cashbackEarned = loyaltyData
+    ? (loyaltyData.lifetimeSpendSar * (loyaltyData.tierBenefits.cashbackPct / 100)).toFixed(2)
+    : "0.00";
 
   const selectedTier = getTier(selectedTierName);
-  const isCurrentTier = selectedTierName === MOCK_LOYALTY.currentTier;
+  const isCurrentTier = selectedTierName === currentTierName;
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator color="#7C3AED" size="large" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -139,13 +178,13 @@ export default function LoyaltyScreen() {
             <Ionicons name={currentTier.icon as any} size={14} color="white" />
             <Text style={styles.heroBadgeText}>{currentTier.name}</Text>
           </View>
-          <Text style={styles.heroMonthPts}>+{MOCK_LOYALTY.pointsThisMonth} pts this month</Text>
+          <Text style={styles.heroMonthPts}>{totalPoints > 0 ? `+${totalPoints} pts balance` : "Start earning points"}</Text>
         </View>
 
         {/* Points */}
         <Text style={styles.heroPointsLabel}>Your points</Text>
         <Text style={styles.heroPoints}>
-          {MOCK_LOYALTY.totalPoints.toLocaleString("en-SA")}
+          {totalPoints.toLocaleString("en-SA")}
           <Text style={styles.heroPtsSuffix}> pts</Text>
         </Text>
 
@@ -181,7 +220,7 @@ export default function LoyaltyScreen() {
         <View style={styles.heroCashbackRow}>
           <Ionicons name="wallet-outline" size={13} color="rgba(255,255,255,0.75)" />
           <Text style={styles.heroCashbackText}>
-            SAR {MOCK_LOYALTY.cashbackEarnedSar} cashback earned lifetime
+            SAR {cashbackEarned} cashback earned lifetime
           </Text>
         </View>
       </LinearGradient>
@@ -190,7 +229,6 @@ export default function LoyaltyScreen() {
       <View style={styles.tierTrackWrap}>
         <View style={styles.tierTrack}>
           {MOCK_TIERS.map((tier, idx) => {
-            const tierIdx = MOCK_TIERS.findIndex((t) => t.name === MOCK_LOYALTY.currentTier);
             const isPast = idx < tierIdx;
             const isCurrent = idx === tierIdx;
             const isFuture = idx > tierIdx;
@@ -201,7 +239,7 @@ export default function LoyaltyScreen() {
               <React.Fragment key={tier.name}>
                 <TouchableOpacity
                   style={styles.tierNode}
-                  onPress={() => setSelectedTierName(tier.name)}
+                  onPress={() => setUserPickedTier(tier.name)}
                   activeOpacity={0.75}
                 >
                   <LinearGradient
@@ -335,28 +373,13 @@ export default function LoyaltyScreen() {
 
       {/* Points activity */}
       <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>Recent activity</Text>
-      <View style={styles.activityCard}>
-        {MOCK_POINTS_ACTIVITY.map((item, idx) => {
-          const isEarn = item.points > 0;
-          return (
-            <View key={item.id}>
-              <View style={styles.activityRow}>
-                <View
-                  style={[styles.activityDot, { backgroundColor: isEarn ? "#10B981" : "#EF4444" }]}
-                />
-                <View style={styles.activityMid}>
-                  <Text style={styles.activityDesc}>{item.description}</Text>
-                  <Text style={styles.activityDate}>{item.date}</Text>
-                </View>
-                <Text style={[styles.activityPoints, { color: isEarn ? "#10B981" : "#EF4444" }]}>
-                  {isEarn ? "+" : ""}
-                  {item.points} pts
-                </Text>
-              </View>
-              {idx < MOCK_POINTS_ACTIVITY.length - 1 && <View style={styles.activityDivider} />}
-            </View>
-          );
-        })}
+      <View style={[styles.activityCard, styles.activityEmpty]}>
+        <Ionicons name="time-outline" size={28} color="#D1D5DB" />
+        <Text style={styles.activityEmptyText}>
+          {totalPoints === 0
+            ? "Make purchases and pay bills to earn your first points."
+            : "Points activity history coming soon."}
+        </Text>
       </View>
 
       {/* Redeem CTA */}
@@ -663,6 +686,15 @@ const styles = StyleSheet.create({
   activityDate: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
   activityPoints: { fontSize: 15, fontFamily: "PlusJakartaSans_700Bold" },
   activityDivider: { height: 1, backgroundColor: "#F9FAFB", marginLeft: 20 },
+  activityEmpty: { alignItems: "center", justifyContent: "center", paddingVertical: 28, gap: 10 },
+  activityEmptyText: {
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    color: "#9CA3AF",
+    textAlign: "center",
+    lineHeight: 18,
+    paddingHorizontal: 16,
+  },
 
   // Redeem CTA
   redeemBtn: { marginHorizontal: 20, borderRadius: 16, overflow: "hidden" },

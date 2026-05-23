@@ -1,74 +1,29 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useMemo } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-client";
 
-type Notification = {
+type ApiNotification = {
   id: string;
   type: "payment" | "transaction" | "investment" | "allowance";
   title: string;
   body: string;
-  time: string;
-  read: boolean;
+  isRead: boolean;
+  createdAt: string;
 };
 
-const TODAY: Notification[] = [
-  {
-    id: "1",
-    type: "payment",
-    title: "Bill due tomorrow",
-    body: "Your Tabby payment of SAR 340 is due tomorrow.",
-    time: "9:41 AM",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "allowance",
-    title: "Allowance sent",
-    body: "SAR 50 weekly allowance sent to Omar.",
-    time: "8:00 AM",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "transaction",
-    title: "Purchase approved",
-    body: "SAR 125 at Carrefour — Groceries Card.",
-    time: "7:22 AM",
-    read: true,
-  },
-];
-
-const EARLIER: Notification[] = [
-  {
-    id: "4",
-    type: "investment",
-    title: "Portfolio up +2.1%",
-    body: "Your Global Tech ETF gained this week.",
-    time: "Yesterday",
-    read: true,
-  },
-  {
-    id: "5",
-    type: "payment",
-    title: "Bill paid",
-    body: "SAR 65 paid to Netflix — Premium Plan.",
-    time: "2 days ago",
-    read: true,
-  },
-  {
-    id: "6",
-    type: "transaction",
-    title: "Transfer received",
-    body: "SAR 1,200 received from Sultan.",
-    time: "3 days ago",
-    read: true,
-  },
-];
-
 const ICON_MAP: Record<
-  Notification["type"],
+  ApiNotification["type"],
   { name: React.ComponentProps<typeof Ionicons>["name"]; color: string; bg: string }
 > = {
   payment: { name: "receipt-outline", color: "#F59E0B", bg: "#FEF3C7" },
@@ -77,27 +32,85 @@ const ICON_MAP: Record<
   allowance: { name: "people-outline", color: "#EC4899", bg: "#FCE7F3" },
 };
 
-function NotifItem({ item }: { item: Notification }) {
-  const icon = ICON_MAP[item.type];
+function isToday(dateStr: string): boolean {
+  const d = new Date(dateStr);
+  const now = new Date();
   return (
-    <TouchableOpacity style={styles.item} activeOpacity={0.7}>
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+}
+
+function formatTime(dateStr: string): string {
+  if (isToday(dateStr)) {
+    return new Date(dateStr).toLocaleTimeString("en-SA", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  const diffDays = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return new Date(dateStr).toLocaleDateString("en-SA", { month: "short", day: "numeric" });
+}
+
+function NotifItem({
+  item,
+  onPress,
+}: {
+  item: ApiNotification;
+  onPress: (id: string) => void;
+}) {
+  const icon = ICON_MAP[item.type] ?? ICON_MAP.transaction;
+  return (
+    <TouchableOpacity style={styles.item} activeOpacity={0.7} onPress={() => onPress(item.id)}>
       <View style={[styles.iconBg, { backgroundColor: icon.bg }]}>
         <Ionicons name={icon.name} size={20} color={icon.color} />
       </View>
       <View style={styles.itemBody}>
         <View style={styles.itemTop}>
-          <Text style={styles.itemTitle}>{item.title}</Text>
-          <Text style={styles.itemTime}>{item.time}</Text>
+          <Text style={[styles.itemTitle, !item.isRead && styles.itemTitleUnread]}>
+            {item.title}
+          </Text>
+          <Text style={styles.itemTime}>{formatTime(item.createdAt)}</Text>
         </View>
         <Text style={styles.itemDesc}>{item.body}</Text>
       </View>
-      {!item.read && <View style={styles.unreadDot} />}
+      {!item.isRead && <View style={styles.unreadDot} />}
     </TouchableOpacity>
   );
 }
 
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/notifications?limit=50");
+      if (!res.ok) throw new Error("Failed to fetch notifications");
+      return res.json() as Promise<{ notifications: ApiNotification[] }>;
+    },
+  });
+
+  const notifications = data?.notifications ?? [];
+  const todayItems = useMemo(() => notifications.filter((n) => isToday(n.createdAt)), [notifications]);
+  const earlierItems = useMemo(() => notifications.filter((n) => !isToday(n.createdAt)), [notifications]);
+  const hasUnread = useMemo(() => notifications.some((n) => !n.isRead), [notifications]);
+
+  const markReadMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/api/notifications/${id}/read`, { method: "PATCH" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: () => apiFetch("/api/notifications/read-all", { method: "POST" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -105,30 +118,51 @@ export default function NotificationsScreen() {
           <Ionicons name="chevron-back" size={22} color="#1A1426" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
-        <TouchableOpacity>
-          <Text style={styles.markAll}>Mark all read</Text>
+        <TouchableOpacity
+          onPress={() => markAllReadMutation.mutate()}
+          disabled={!hasUnread || markAllReadMutation.isPending}
+        >
+          <Text style={[styles.markAll, !hasUnread && styles.markAllDisabled]}>Mark all read</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
-        <Text style={styles.sectionLabel}>Today</Text>
-        {TODAY.map((n) => (
-          <NotifItem key={n.id} item={n} />
-        ))}
-        <Text style={styles.sectionLabel}>Earlier</Text>
-        {EARLIER.map((n) => (
-          <NotifItem key={n.id} item={n} />
-        ))}
-      </ScrollView>
+      {isLoading ? (
+        <View style={styles.center}>
+          <ActivityIndicator color="#7C3AED" />
+        </View>
+      ) : notifications.length === 0 ? (
+        <View style={styles.center}>
+          <Ionicons name="notifications-off-outline" size={40} color="#D1D5DB" />
+          <Text style={styles.emptyTitle}>No notifications yet</Text>
+          <Text style={styles.emptyText}>Activity updates will appear here.</Text>
+        </View>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+          {todayItems.length > 0 && (
+            <>
+              <Text style={styles.sectionLabel}>Today</Text>
+              {todayItems.map((n) => (
+                <NotifItem key={n.id} item={n} onPress={(id) => markReadMutation.mutate(id)} />
+              ))}
+            </>
+          )}
+          {earlierItems.length > 0 && (
+            <>
+              <Text style={styles.sectionLabel}>Earlier</Text>
+              {earlierItems.map((n) => (
+                <NotifItem key={n.id} item={n} onPress={(id) => markReadMutation.mutate(id)} />
+              ))}
+            </>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#FAFAFA" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -148,6 +182,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 17, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
   markAll: { fontSize: 13, color: "#7C3AED", fontFamily: "Inter_500Medium" },
+  markAllDisabled: { color: "#D1D5DB" },
   sectionLabel: {
     fontSize: 11,
     fontFamily: "Inter_500Medium",
@@ -185,11 +220,12 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: "Inter_500Medium",
     color: "#1A1426",
     flex: 1,
     marginRight: 8,
   },
+  itemTitleUnread: { fontFamily: "Inter_600SemiBold" },
   itemTime: { fontSize: 12, color: "#9CA3AF", fontFamily: "Inter_400Regular" },
   itemDesc: { fontSize: 13, color: "#6B7280", fontFamily: "Inter_400Regular", lineHeight: 18 },
   unreadDot: {
@@ -199,5 +235,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#7C3AED",
     marginTop: 4,
     flexShrink: 0,
+  },
+  emptyTitle: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#374151" },
+  emptyText: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
   },
 });

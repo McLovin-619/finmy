@@ -40,7 +40,9 @@
         {
           "faceIDPermission": "Allow finmy to use Face ID to sign you in."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

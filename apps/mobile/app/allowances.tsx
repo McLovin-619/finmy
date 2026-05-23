@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActionSheetIOS,
+  ActivityIndicator,
   Alert,
   Modal,
   Platform,
@@ -15,13 +16,42 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  MOCK_ALLOWANCES,
-  type Allowance,
-  type AllowanceFrequency,
-  type AllowanceRelation,
-  type AllowanceStatus,
-} from "@/lib/mock-data";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-client";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type AllowanceFrequency = "daily" | "weekly" | "monthly";
+type AllowanceRelation = "Son" | "Daughter" | "Staff" | "Other";
+type AllowanceStatus = "active" | "paused";
+type AddStep = "who" | "schedule";
+
+type ApiAllowance = {
+  id: string;
+  name: string;
+  relation: "son" | "daughter" | "staff" | "other";
+  targetIbanOrPhone: string;
+  amountSar: number;
+  frequency: AllowanceFrequency;
+  nextPayoutDate: string;
+  isActive: boolean;
+  totalSentSar: number;
+  createdAt: string;
+};
+
+type Allowance = {
+  id: string;
+  name: string;
+  relation: AllowanceRelation;
+  initials: string;
+  color: string;
+  handle: string;
+  amountSar: number;
+  frequency: AllowanceFrequency;
+  dayLabel: string;
+  status: AllowanceStatus;
+  totalSentSar: number;
+};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -49,6 +79,14 @@ const FREQ_LABELS: Record<AllowanceFrequency, string> = {
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_DAYS = ["1st", "5th", "10th", "15th", "25th", "28th"];
+const WEEK_DAY_INDICES: Record<string, number> = {
+  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+};
+const MONTH_DAY_VALUES: Record<string, number> = {
+  "1st": 1, "5th": 5, "10th": 10, "15th": 15, "25th": 25, "28th": 28,
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toMonthly(amount: number, freq: AllowanceFrequency) {
   if (freq === "daily") return amount * 30;
@@ -56,50 +94,129 @@ function toMonthly(amount: number, freq: AllowanceFrequency) {
   return amount;
 }
 
-type AddStep = "who" | "schedule" | "success";
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function getDayLabel(freq: AllowanceFrequency, nextPayoutDate: string): string {
+  const d = new Date(nextPayoutDate);
+  if (freq === "daily") return "Every day";
+  if (freq === "weekly") {
+    const names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return `Every ${names[d.getDay()]}`;
+  }
+  const day = d.getDate();
+  const suffix = day === 1 ? "st" : day === 2 ? "nd" : day === 3 ? "rd" : "th";
+  return `${day}${suffix} of every month`;
+}
+
+function toDisplay(a: ApiAllowance): Allowance {
+  const rel = (a.relation.charAt(0).toUpperCase() + a.relation.slice(1)) as AllowanceRelation;
+  return {
+    id: a.id,
+    name: a.name,
+    relation: rel,
+    initials: getInitials(a.name),
+    color: RELATION_COLORS[rel],
+    handle: a.targetIbanOrPhone,
+    amountSar: a.amountSar,
+    frequency: a.frequency,
+    dayLabel: getDayLabel(a.frequency, a.nextPayoutDate),
+    status: a.isActive ? "active" : "paused",
+    totalSentSar: a.totalSentSar,
+  };
+}
+
+function computeNextPayoutDate(freq: AllowanceFrequency, selectedDay: string): string {
+  const now = new Date();
+  if (freq === "daily") {
+    const d = new Date(now);
+    d.setDate(d.getDate() + 1);
+    d.setHours(9, 0, 0, 0);
+    return d.toISOString();
+  }
+  if (freq === "weekly") {
+    const target = WEEK_DAY_INDICES[selectedDay] ?? 0;
+    const d = new Date(now);
+    const daysUntil = ((target - d.getDay() + 7) % 7) || 7;
+    d.setDate(d.getDate() + daysUntil);
+    d.setHours(9, 0, 0, 0);
+    return d.toISOString();
+  }
+  const targetDate = MONTH_DAY_VALUES[selectedDay] ?? 1;
+  const d = new Date(now);
+  d.setDate(targetDate);
+  d.setHours(9, 0, 0, 0);
+  if (d <= now) d.setMonth(d.getMonth() + 1);
+  return d.toISOString();
+}
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function AllowancesScreen() {
   const insets = useSafeAreaInsets();
-  const [allowances, setAllowances] = useState(MOCK_ALLOWANCES);
+  const queryClient = useQueryClient();
   const [adding, setAdding] = useState(false);
+
+  const { data: rawAllowances = [], isLoading } = useQuery({
+    queryKey: ["allowances"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/allowances");
+      if (!res.ok) throw new Error("Failed to fetch allowances");
+      return ((await res.json()) as { allowances: ApiAllowance[] }).allowances;
+    },
+  });
+
+  const allowances = useMemo(() => rawAllowances.map(toDisplay), [rawAllowances]);
+
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      apiFetch(`/api/allowances/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isActive }),
+      }).then((r) => { if (!r.ok) throw new Error("Failed"); }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["allowances"] }),
+    onError: () => Alert.alert("Error", "Could not update allowance."),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/api/allowances/${id}`, { method: "DELETE" }).then((r) => {
+        if (!r.ok) throw new Error("Failed");
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["allowances"] }),
+    onError: () => Alert.alert("Error", "Could not delete allowance."),
+  });
+
+  const addMutation = useMutation({
+    mutationFn: (input: {
+      name: string;
+      relation: string;
+      targetIbanOrPhone: string;
+      amountSar: number;
+      frequency: AllowanceFrequency;
+      nextPayoutDate: string;
+    }) =>
+      apiFetch("/api/allowances", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }).then((r) => { if (!r.ok) throw new Error("Failed"); }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["allowances"] });
+      setAdding(false);
+    },
+    onError: () => Alert.alert("Error", "Could not add allowance."),
+  });
 
   const active = allowances.filter((a) => a.status === "active");
   const monthlyTotal = active.reduce((s, a) => s + toMonthly(a.amountSar, a.frequency), 0);
 
-  function toggleStatus(id: string) {
-    setAllowances((prev) =>
-      prev.map((a) =>
-        a.id === id
-          ? { ...a, status: (a.status === "active" ? "paused" : "active") as AllowanceStatus }
-          : a
-      )
-    );
-  }
-
-  function deleteAllowance(id: string) {
-    setAllowances((prev) => prev.filter((a) => a.id !== id));
-  }
-
-  function onLongPress(allowance: Allowance) {
-    const isPaused = allowance.status === "paused";
-    const options = [isPaused ? "Resume" : "Pause", "Delete", "Cancel"];
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        { title: allowance.name, options, destructiveButtonIndex: 1, cancelButtonIndex: 2 },
-        (i) => {
-          if (i === 0) toggleStatus(allowance.id);
-          if (i === 1) confirmDelete(allowance);
-        }
-      );
-    } else {
-      Alert.alert(allowance.name, undefined, [
-        { text: isPaused ? "Resume" : "Pause", onPress: () => toggleStatus(allowance.id) },
-        { text: "Delete", style: "destructive", onPress: () => confirmDelete(allowance) },
-        { text: "Cancel", style: "cancel" },
-      ]);
-    }
+  function toggleStatus(a: Allowance) {
+    toggleMutation.mutate({ id: a.id, isActive: a.status !== "active" });
   }
 
   function confirmDelete(a: Allowance) {
@@ -108,14 +225,37 @@ export default function AllowancesScreen() {
       `Stop sending ${FREQ_LABELS[a.frequency].toLowerCase()} allowance to ${a.name}?`,
       [
         { text: "Keep It", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => deleteAllowance(a.id) },
-      ]
+        { text: "Delete", style: "destructive", onPress: () => deleteMutation.mutate(a.id) },
+      ],
     );
   }
 
-  function onAdd(newAllowance: Allowance) {
-    setAllowances((prev) => [...prev, newAllowance]);
-    setAdding(false);
+  function onLongPress(a: Allowance) {
+    const isPaused = a.status === "paused";
+    const options = [isPaused ? "Resume" : "Pause", "Delete", "Cancel"];
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { title: a.name, options, destructiveButtonIndex: 1, cancelButtonIndex: 2 },
+        (i) => {
+          if (i === 0) toggleStatus(a);
+          if (i === 1) confirmDelete(a);
+        },
+      );
+    } else {
+      Alert.alert(a.name, undefined, [
+        { text: isPaused ? "Resume" : "Pause", onPress: () => toggleStatus(a) },
+        { text: "Delete", style: "destructive", onPress: () => confirmDelete(a) },
+        { text: "Cancel", style: "cancel" },
+      ]);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <View style={[styles.root, { paddingTop: insets.top, alignItems: "center", justifyContent: "center" }]}>
+        <ActivityIndicator color="#7C3AED" size="large" />
+      </View>
+    );
   }
 
   return (
@@ -169,7 +309,7 @@ export default function AllowancesScreen() {
             <AllowanceCard
               key={a.id}
               allowance={a}
-              onToggle={() => toggleStatus(a.id)}
+              onToggle={() => toggleStatus(a)}
               onLongPress={() => onLongPress(a)}
             />
           ))
@@ -186,8 +326,8 @@ export default function AllowancesScreen() {
       <Modal visible={adding} animationType="slide" presentationStyle="pageSheet">
         <AddAllowanceFlow
           onClose={() => setAdding(false)}
-          onSuccess={onAdd}
-          existingCount={allowances.length}
+          onAdd={addMutation.mutate}
+          adding={addMutation.isPending}
         />
       </Modal>
     </View>
@@ -284,12 +424,19 @@ function AllowanceCard({
 
 function AddAllowanceFlow({
   onClose,
-  onSuccess,
-  existingCount,
+  onAdd,
+  adding,
 }: {
   onClose: () => void;
-  onSuccess: (a: Allowance) => void;
-  existingCount: number;
+  onAdd: (input: {
+    name: string;
+    relation: string;
+    targetIbanOrPhone: string;
+    amountSar: number;
+    frequency: AllowanceFrequency;
+    nextPayoutDate: string;
+  }) => void;
+  adding: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<AddStep>("who");
@@ -310,48 +457,25 @@ function AddAllowanceFlow({
   const QUICK_AMOUNTS = ["50", "100", "200", "500", "1,000", "1,500"];
 
   function goBack() {
-    if (step === "schedule") {
-      setStep("who");
-      return;
-    }
+    if (step === "schedule") { setStep("who"); return; }
     onClose();
   }
 
   function confirmSchedule() {
     const amountNum = parseFloat(amount.replace(/,/g, ""));
-    let dayLabel = "";
-    if (frequency === "daily") dayLabel = "Every day";
-    else if (frequency === "weekly") dayLabel = `Every ${selectedDay}`;
-    else dayLabel = `${selectedDay} of every month`;
-
-    const color = RELATION_COLORS[relation!];
-    const initials = name
-      .split(" ")
-      .slice(0, 2)
-      .map((w) => w[0].toUpperCase())
-      .join("");
-
-    const newAllowance: Allowance = {
-      id: `al${existingCount + 1}`,
+    onAdd({
       name: name.trim(),
-      relation: relation!,
-      initials: initials || name[0].toUpperCase(),
-      color,
-      handle: handle.trim(),
+      relation: relation!.toLowerCase(),
+      targetIbanOrPhone: handle.trim(),
       amountSar: amountNum,
       frequency,
-      dayLabel,
-      status: "active",
-      totalSentSar: 0,
-    };
-
-    onSuccess(newAllowance);
+      nextPayoutDate: computeNextPayoutDate(frequency, selectedDay),
+    });
   }
 
   const stepTitle: Record<AddStep, string> = {
     who: "Who is this for?",
     schedule: "Set Schedule",
-    success: "",
   };
 
   return (
@@ -390,9 +514,7 @@ function AddAllowanceFlow({
                   size={14}
                   color={relation === r ? "white" : "#6B7280"}
                 />
-                <Text style={[addStyles.chipText, relation === r && addStyles.chipTextOn]}>
-                  {r}
-                </Text>
+                <Text style={[addStyles.chipText, relation === r && addStyles.chipTextOn]}>{r}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -428,12 +550,7 @@ function AddAllowanceFlow({
                 style={[addStyles.previewAvatar, { backgroundColor: RELATION_COLORS[relation] }]}
               >
                 <Text style={addStyles.previewAvatarText}>
-                  {name
-                    .split(" ")
-                    .map((w) => w[0])
-                    .slice(0, 2)
-                    .join("")
-                    .toUpperCase() || name[0].toUpperCase()}
+                  {getInitials(name)}
                 </Text>
               </View>
               <View>
@@ -552,11 +669,15 @@ function AddAllowanceFlow({
           )}
 
           <TouchableOpacity
-            style={[addStyles.cta, !step2Valid && addStyles.ctaDisabled]}
+            style={[addStyles.cta, (!step2Valid || adding) && addStyles.ctaDisabled]}
             onPress={confirmSchedule}
-            disabled={!step2Valid}
+            disabled={!step2Valid || adding}
           >
-            <Text style={addStyles.ctaText}>Set Up Allowance</Text>
+            {adding ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={addStyles.ctaText}>Set Up Allowance</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       )}

@@ -67,11 +67,11 @@ export const walletRoutes = new Hono()
       });
       if (!wallet) return c.json({ error: "Wallet not found" }, 404);
 
-      type TxType = "salary_payment" | "bonus" | "deduction" | "top_up" | "withdrawal" | "allowance_payment" | "investment_deduction" | "bill_payment" | "card_payment" | "transfer_out" | "transfer_in";
-      const INCOME_TYPES: TxType[] = ["transfer_in", "top_up", "salary_payment", "bonus"];
+      type TxType = "salary_payment" | "bonus" | "deduction" | "top_up" | "withdrawal" | "allowance_payment" | "investment_deduction" | "bill_payment" | "card_payment" | "transfer_out" | "transfer_in" | "stock_buy" | "stock_sell";
+      const INCOME_TYPES: TxType[] = ["transfer_in", "top_up", "salary_payment", "bonus", "stock_sell"];
       const EXPENSE_TYPES: TxType[] = [
         "transfer_out", "withdrawal", "allowance_payment", "investment_deduction",
-        "bill_payment", "card_payment", "deduction",
+        "bill_payment", "card_payment", "deduction", "stock_buy",
       ];
 
       const conditions = [eq(transactions.walletId, wallet.id)];

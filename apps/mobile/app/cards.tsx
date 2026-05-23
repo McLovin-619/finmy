@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   Modal,
@@ -15,7 +16,33 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MOCK_CARDS, type CardFormat, type CardNetwork, type IssuedCard } from "@/lib/mock-data";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api-client";
+import { useAuth } from "@/lib/auth";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type ApiCard = {
+  id: string;
+  last4: string;
+  network: "mada" | "visa" | "mastercard";
+  cardType: "virtual" | "physical";
+  label: string | null;
+  spendLimitSar: number | null;
+  status: "active" | "frozen" | "cancelled";
+  expiresAt: string;
+  createdAt: string;
+};
+
+type IssueableNetwork = "mada" | "visa" | "mastercard";
+
+type CardSettings = {
+  onlinePayments: boolean;
+  contactless: boolean;
+  internationalTx: boolean;
+};
+
+type IssueStep = "type" | "format" | "limit";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -25,7 +52,7 @@ const CARD_GAP = 12;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 
 const NETWORK_DEFS: Record<
-  CardNetwork,
+  IssueableNetwork,
   { displayName: string; benefit: string; colors: [string, string] }
 > = {
   mada: {
@@ -43,47 +70,159 @@ const NETWORK_DEFS: Record<
     benefit: "Credit card with cashback rewards on every purchase",
     colors: ["#EF4444", "#F97316"],
   },
-  travel: {
-    displayName: "Travel",
-    benefit: "Zero FX fees, airport lounge access, travel insurance",
-    colors: ["#0EA5E9", "#14B8A6"],
-  },
 };
 
-type IssueStep = "type" | "format" | "limit" | "success";
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function expiryLabel(expiresAt: string): string {
+  const d = new Date(expiresAt);
+  return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getFullYear()).slice(2)}`;
+}
+
+function defaultSettings(card: ApiCard): CardSettings {
+  return {
+    onlinePayments: true,
+    contactless: card.cardType === "physical",
+    internationalTx: card.network !== "mada",
+  };
+}
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function CardsScreen() {
   const insets = useSafeAreaInsets();
+  const { state: authState } = useAuth();
+  const queryClient = useQueryClient();
   const scrollRef = useRef<ScrollView>(null);
-  const [cards, setCards] = useState(MOCK_CARDS);
+  const cardsLenRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [issuing, setIssuing] = useState(false);
+  const [cardSettings, setCardSettings] = useState<Record<string, CardSettings>>({});
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["cards"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/cards");
+      if (!res.ok) throw new Error("Failed to fetch cards");
+      return res.json() as Promise<ApiCard[]>;
+    },
+  });
+  const cards = useMemo(() => data ?? [], [data]);
 
   const card = cards[activeIndex] ?? cards[0];
+  const settings = card ? (cardSettings[card.id] ?? defaultSettings(card)) : null;
+
+  useEffect(() => {
+    cardsLenRef.current = cards.length;
+    setCardSettings((prev) => {
+      const next: typeof prev = {};
+      for (const c of cards) {
+        next[c.id] = prev[c.id] ?? defaultSettings(c);
+      }
+      return next;
+    });
+  }, [cards]);
+
+  const freezeMutation = useMutation({
+    mutationFn: (cardId: string) =>
+      apiFetch(`/api/cards/${cardId}/freeze`, { method: "POST" }).then((r) => {
+        if (!r.ok) throw new Error("Failed");
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cards"] }),
+    onError: () => Alert.alert("Error", "Could not freeze card. Please try again."),
+  });
+
+  const unfreezeMutation = useMutation({
+    mutationFn: (cardId: string) =>
+      apiFetch(`/api/cards/${cardId}/unfreeze`, { method: "POST" }).then((r) => {
+        if (!r.ok) throw new Error("Failed");
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cards"] }),
+    onError: () => Alert.alert("Error", "Could not unfreeze card. Please try again."),
+  });
+
+  const issueMutation = useMutation({
+    mutationFn: (input: {
+      network: IssueableNetwork;
+      cardType: "virtual" | "physical";
+      spendLimitSar: number;
+    }) =>
+      apiFetch("/api/cards/issue", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }).then((r) => {
+        if (!r.ok) throw new Error("Failed");
+        return r.json() as Promise<ApiCard>;
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cards"] });
+      setIssuing(false);
+      setTimeout(() => {
+        setActiveIndex(cardsLenRef.current);
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 300);
+    },
+    onError: () => Alert.alert("Error", "Could not issue card. Please try again."),
+  });
 
   function toggleFreeze() {
-    setCards((prev) =>
-      prev.map((c, i) =>
-        i === activeIndex ? { ...c, status: c.status === "active" ? "frozen" : "active" } : c
-      )
+    if (!card) return;
+    if (card.status === "frozen") unfreezeMutation.mutate(card.id);
+    else freezeMutation.mutate(card.id);
+  }
+
+  function toggleSetting(key: keyof CardSettings) {
+    if (!card) return;
+    setCardSettings((prev) => {
+      const current = prev[card.id] ?? defaultSettings(card);
+      return { ...prev, [card.id]: { ...current, [key]: !current[key] } };
+    });
+  }
+
+  const holderName =
+    authState.status === "authenticated" ? (authState.user.name ?? "Card Holder") : "Card Holder";
+
+  if (isLoading) {
+    return (
+      <View style={[styles.root, { paddingTop: insets.top, alignItems: "center", justifyContent: "center" }]}>
+        <ActivityIndicator color="#7C3AED" size="large" />
+      </View>
     );
   }
 
-  function toggleSetting(key: "onlinePayments" | "contactless" | "internationalTx") {
-    setCards((prev) => prev.map((c, i) => (i === activeIndex ? { ...c, [key]: !c[key] } : c)));
+  if (cards.length === 0) {
+    return (
+      <View style={[styles.root, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={24} color="#1A1426" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Cards</Text>
+          <TouchableOpacity style={styles.newCardBtn} onPress={() => setIssuing(true)}>
+            <Ionicons name="add" size={18} color="#7C3AED" />
+            <Text style={styles.newCardBtnText}>New</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.emptyState}>
+          <Ionicons name="card-outline" size={48} color="#D1D5DB" />
+          <Text style={styles.emptyTitle}>No cards yet</Text>
+          <Text style={styles.emptyText}>Issue your first virtual or physical card to get started.</Text>
+          <TouchableOpacity style={styles.emptyBtn} onPress={() => setIssuing(true)}>
+            <Text style={styles.emptyBtnText}>Issue a Card</Text>
+          </TouchableOpacity>
+        </View>
+        <Modal visible={issuing} animationType="slide" presentationStyle="pageSheet">
+          <IssueCardFlow
+            onClose={() => setIssuing(false)}
+            onIssue={(input) => issueMutation.mutate(input)}
+            issuing={issueMutation.isPending}
+          />
+        </Modal>
+      </View>
+    );
   }
 
-  function onAddCard(newCard: IssuedCard) {
-    setCards((prev) => [...prev, newCard]);
-    setActiveIndex(cards.length); // jump to the new card
-    setIssuing(false);
-    // Scroll to end after state update
-    setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }
+  const spendLimit = card.spendLimitSar ?? 10_000;
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -118,7 +257,7 @@ export default function CardsScreen() {
           }}
         >
           {cards.map((c) => (
-            <CardVisual key={c.id} card={c} />
+            <CardVisual key={c.id} card={c} holderName={holderName} />
           ))}
         </ScrollView>
 
@@ -133,29 +272,14 @@ export default function CardsScreen() {
         <View style={styles.spendCard}>
           <View style={styles.spendTopRow}>
             <Text style={styles.spendLabel}>Spent this month</Text>
-            <Text style={styles.spendLimit}>
-              limit SAR {card.spendLimitSar.toLocaleString("en-SA")}
-            </Text>
+            <Text style={styles.spendLimit}>limit SAR {spendLimit.toLocaleString("en-SA")}</Text>
           </View>
           <View style={styles.spendBarTrack}>
-            <View
-              style={[
-                styles.spendBarFill,
-                {
-                  width:
-                    `${Math.min(100, (card.spentThisMonthSar / card.spendLimitSar) * 100)}%` as any,
-                  backgroundColor: card.gradientColors[0],
-                },
-              ]}
-            />
+            <View style={[styles.spendBarFill, { width: "0%", backgroundColor: NETWORK_DEFS[card.network]?.colors[0] ?? "#7C3AED" }]} />
           </View>
           <View style={styles.spendBottomRow}>
-            <Text style={styles.spentAmount}>
-              SAR {card.spentThisMonthSar.toLocaleString("en-SA")}
-            </Text>
-            <Text style={styles.spendPct}>
-              {Math.round((card.spentThisMonthSar / card.spendLimitSar) * 100)}% used
-            </Text>
+            <Text style={styles.spentAmount}>SAR 0</Text>
+            <Text style={styles.spendPct}>0% used</Text>
           </View>
         </View>
 
@@ -174,7 +298,7 @@ export default function CardsScreen() {
             onPress={() =>
               Alert.alert(
                 "Spend Limits",
-                "Spend limit management will be available in the next release."
+                "Spend limit management will be available in the next release.",
               )
             }
           />
@@ -183,10 +307,7 @@ export default function CardsScreen() {
             label="Show Number"
             color="#7C3AED"
             onPress={() =>
-              Alert.alert(
-                "Card Number",
-                `4111 2233 4455 ${card.lastFour}\n\nExpiry: ${card.expiry}\nCVV: •••`
-              )
+              Alert.alert("Card Number", `•••• •••• •••• ${card.last4}\n\nExpiry: ${expiryLabel(card.expiresAt)}\nCVV: •••`)
             }
           />
           <QuickAction
@@ -203,34 +324,36 @@ export default function CardsScreen() {
         </View>
 
         {/* Settings toggles */}
-        <View style={styles.settingsCard}>
-          <SettingRow
-            icon="globe-outline"
-            label="Online Payments"
-            sub="Allow card use on websites and apps"
-            value={card.onlinePayments}
-            onToggle={() => toggleSetting("onlinePayments")}
-            disabled={card.status === "frozen"}
-          />
-          <View style={styles.settingDivider} />
-          <SettingRow
-            icon="wifi-outline"
-            label="Contactless"
-            sub="Tap-to-pay at physical terminals"
-            value={card.contactless}
-            onToggle={() => toggleSetting("contactless")}
-            disabled={card.status === "frozen"}
-          />
-          <View style={styles.settingDivider} />
-          <SettingRow
-            icon="earth-outline"
-            label="International Transactions"
-            sub="Use card outside Saudi Arabia"
-            value={card.internationalTx}
-            onToggle={() => toggleSetting("internationalTx")}
-            disabled={card.status === "frozen"}
-          />
-        </View>
+        {settings && (
+          <View style={styles.settingsCard}>
+            <SettingRow
+              icon="globe-outline"
+              label="Online Payments"
+              sub="Allow card use on websites and apps"
+              value={settings.onlinePayments}
+              onToggle={() => toggleSetting("onlinePayments")}
+              disabled={card.status === "frozen"}
+            />
+            <View style={styles.settingDivider} />
+            <SettingRow
+              icon="wifi-outline"
+              label="Contactless"
+              sub="Tap-to-pay at physical terminals"
+              value={settings.contactless}
+              onToggle={() => toggleSetting("contactless")}
+              disabled={card.status === "frozen"}
+            />
+            <View style={styles.settingDivider} />
+            <SettingRow
+              icon="earth-outline"
+              label="International Transactions"
+              sub="Use card outside Saudi Arabia"
+              value={settings.internationalTx}
+              onToggle={() => toggleSetting("internationalTx")}
+              disabled={card.status === "frozen"}
+            />
+          </View>
+        )}
 
         {card.status === "frozen" && (
           <View style={styles.frozenBanner}>
@@ -246,8 +369,8 @@ export default function CardsScreen() {
       <Modal visible={issuing} animationType="slide" presentationStyle="pageSheet">
         <IssueCardFlow
           onClose={() => setIssuing(false)}
-          onSuccess={onAddCard}
-          existingCount={cards.length}
+          onIssue={(input) => issueMutation.mutate(input)}
+          issuing={issueMutation.isPending}
         />
       </Modal>
     </View>
@@ -256,12 +379,15 @@ export default function CardsScreen() {
 
 // ─── Card visual ──────────────────────────────────────────────────────────────
 
-function CardVisual({ card }: { card: IssuedCard }) {
+function CardVisual({ card, holderName }: { card: ApiCard; holderName: string }) {
   const frozen = card.status === "frozen";
+  const def = NETWORK_DEFS[card.network];
+  const gradientColors = def?.colors ?? (["#7C3AED", "#5B21B6"] as [string, string]);
+
   return (
     <View style={styles.cardWrapper}>
       <LinearGradient
-        colors={card.gradientColors}
+        colors={gradientColors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.cardGradient}
@@ -270,24 +396,24 @@ function CardVisual({ card }: { card: IssuedCard }) {
         <View style={styles.cardTopRow}>
           <View style={styles.cardFormatBadge}>
             <Text style={styles.cardFormatText}>
-              {card.format === "virtual" ? "Virtual" : "Physical"}
+              {card.cardType === "virtual" ? "Virtual" : "Physical"}
             </Text>
           </View>
           <NetworkLogo network={card.network} />
         </View>
 
         {/* Card number */}
-        <Text style={styles.cardNumber}>•••• •••• •••• {card.lastFour}</Text>
+        <Text style={styles.cardNumber}>•••• •••• •••• {card.last4}</Text>
 
         {/* Bottom row */}
         <View style={styles.cardBottomRow}>
           <View>
             <Text style={styles.cardFieldLabel}>CARD HOLDER</Text>
-            <Text style={styles.cardFieldValue}>Abdullah Al-Saud</Text>
+            <Text style={styles.cardFieldValue}>{holderName}</Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={styles.cardFieldLabel}>EXPIRES</Text>
-            <Text style={styles.cardFieldValue}>{card.expiry}</Text>
+            <Text style={styles.cardFieldValue}>{expiryLabel(card.expiresAt)}</Text>
           </View>
         </View>
 
@@ -305,7 +431,7 @@ function CardVisual({ card }: { card: IssuedCard }) {
 
 // ─── Network logo ─────────────────────────────────────────────────────────────
 
-function NetworkLogo({ network }: { network: CardNetwork }) {
+function NetworkLogo({ network }: { network: IssueableNetwork }) {
   if (network === "mastercard") {
     return (
       <View style={styles.mcLogoWrap}>
@@ -381,41 +507,35 @@ function SettingRow({
 
 function IssueCardFlow({
   onClose,
-  onSuccess,
-  existingCount,
+  onIssue,
+  issuing,
 }: {
   onClose: () => void;
-  onSuccess: (card: IssuedCard) => void;
-  existingCount: number;
+  onIssue: (input: { network: IssueableNetwork; cardType: "virtual" | "physical"; spendLimitSar: number }) => void;
+  issuing: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<IssueStep>("type");
-  const [network, setNetwork] = useState<CardNetwork | null>(null);
-  const [format, setFormat] = useState<CardFormat | null>(null);
+  const [network, setNetwork] = useState<IssueableNetwork | null>(null);
+  const [cardType, setCardType] = useState<"virtual" | "physical" | null>(null);
   const [limitInput, setLimitInput] = useState("");
 
-  const ISSUE_NETWORKS: CardNetwork[] = ["mada", "visa", "mastercard", "travel"];
+  const ISSUE_NETWORKS: IssueableNetwork[] = ["mada", "visa", "mastercard"];
   const QUICK_LIMITS = ["1,000", "5,000", "10,000", "20,000"];
 
   function goBack() {
-    if (step === "format") {
-      setStep("type");
-      return;
-    }
-    if (step === "limit") {
-      setStep("format");
-      return;
-    }
+    if (step === "format") { setStep("type"); return; }
+    if (step === "limit") { setStep("format"); return; }
     onClose();
   }
 
-  function onSelectNetwork(n: CardNetwork) {
+  function onSelectNetwork(n: IssueableNetwork) {
     setNetwork(n);
     setStep("format");
   }
 
-  function onSelectFormat(f: CardFormat) {
-    setFormat(f);
+  function onSelectFormat(f: "virtual" | "physical") {
+    setCardType(f);
     setStep("limit");
   }
 
@@ -425,30 +545,13 @@ function IssueCardFlow({
       Alert.alert("Invalid limit", "Minimum spend limit is SAR 100.");
       return;
     }
-    const def = NETWORK_DEFS[network!];
-    const newCard: IssuedCard = {
-      id: `card${existingCount + 1}`,
-      network: network!,
-      format: format!,
-      label: def.displayName,
-      lastFour: String(Math.floor(1000 + Math.random() * 9000)),
-      expiry: "05/29",
-      status: "active",
-      spendLimitSar: limit,
-      spentThisMonthSar: 0,
-      onlinePayments: true,
-      contactless: format === "physical",
-      internationalTx: network !== "mada",
-      gradientColors: def.colors as [string, string],
-    };
-    onSuccess(newCard);
+    onIssue({ network: network!, cardType: cardType!, spendLimitSar: limit });
   }
 
   const stepTitle: Record<IssueStep, string> = {
     type: "Choose Card Type",
     format: "Virtual or Physical",
     limit: "Set Spend Limit",
-    success: "",
   };
 
   return (
@@ -512,7 +615,7 @@ function IssueCardFlow({
           )}
 
           <TouchableOpacity
-            style={[issueStyles.formatCard, format === "virtual" && issueStyles.formatCardSelected]}
+            style={[issueStyles.formatCard, cardType === "virtual" && issueStyles.formatCardSelected]}
             onPress={() => onSelectFormat("virtual")}
             activeOpacity={0.75}
           >
@@ -525,14 +628,11 @@ function IssueCardFlow({
                 Instant. Use immediately in Apple Pay, online, and apps.
               </Text>
             </View>
-            {format === "virtual" && <Ionicons name="checkmark-circle" size={22} color="#7C3AED" />}
+            {cardType === "virtual" && <Ionicons name="checkmark-circle" size={22} color="#7C3AED" />}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              issueStyles.formatCard,
-              format === "physical" && issueStyles.formatCardSelected,
-            ]}
+            style={[issueStyles.formatCard, cardType === "physical" && issueStyles.formatCardSelected]}
             onPress={() => onSelectFormat("physical")}
             activeOpacity={0.75}
           >
@@ -545,7 +645,7 @@ function IssueCardFlow({
                 Delivered in 3–5 business days. Contactless chip card.
               </Text>
             </View>
-            {format === "physical" && (
+            {cardType === "physical" && (
               <Ionicons name="checkmark-circle" size={22} color="#7C3AED" />
             )}
           </TouchableOpacity>
@@ -576,10 +676,7 @@ function IssueCardFlow({
             {QUICK_LIMITS.map((q) => (
               <TouchableOpacity
                 key={q}
-                style={[
-                  issueStyles.quickLimitChip,
-                  limitInput === q && issueStyles.quickLimitChipOn,
-                ]}
+                style={[issueStyles.quickLimitChip, limitInput === q && issueStyles.quickLimitChipOn]}
                 onPress={() => setLimitInput(q)}
               >
                 <Text
@@ -595,12 +692,12 @@ function IssueCardFlow({
           </View>
 
           {/* Summary */}
-          {network && format && (
+          {network && cardType && (
             <View style={issueStyles.summaryCard}>
               <SummaryRow label="Card type" value={NETWORK_DEFS[network].displayName} />
               <SummaryRow
                 label="Format"
-                value={format === "virtual" ? "Virtual (instant)" : "Physical (3–5 days)"}
+                value={cardType === "virtual" ? "Virtual (instant)" : "Physical (3–5 days)"}
               />
               {limitInput ? (
                 <SummaryRow label="Spend limit" value={`SAR ${limitInput}/month`} />
@@ -609,12 +706,16 @@ function IssueCardFlow({
           )}
 
           <TouchableOpacity
-            style={[issueStyles.cta, !limitInput && issueStyles.ctaDisabled]}
+            style={[issueStyles.cta, (!limitInput || issuing) && issueStyles.ctaDisabled]}
             onPress={confirm}
-            disabled={!limitInput}
+            disabled={!limitInput || issuing}
             activeOpacity={0.85}
           >
-            <Text style={issueStyles.ctaText}>Issue Card</Text>
+            {issuing ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={issueStyles.ctaText}>Issue Card</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -657,6 +758,31 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   newCardBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#7C3AED" },
+
+  // Empty state
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    paddingHorizontal: 40,
+  },
+  emptyTitle: { fontSize: 18, fontFamily: "PlusJakartaSans_700Bold", color: "#1A1426" },
+  emptyText: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    color: "#9CA3AF",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  emptyBtn: {
+    marginTop: 8,
+    backgroundColor: "#7C3AED",
+    borderRadius: 14,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+  },
+  emptyBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "white" },
 
   // Carousel
   carouselContent: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 8, gap: CARD_GAP },

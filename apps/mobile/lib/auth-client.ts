@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/react";
+import { emailOTPClient } from "better-auth/client/plugins";
 import * as SecureStore from "expo-secure-store";
 
 // Token key in SecureStore
@@ -6,6 +7,7 @@ const TOKEN_KEY = "finmy_session_token";
 
 export const authClient = createAuthClient({
   baseURL: process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3001",
+  plugins: [emailOTPClient()],
   fetchOptions: {
     // Attach stored bearer token on every request
     onRequest: async (ctx) => {
@@ -14,13 +16,11 @@ export const authClient = createAuthClient({
         ctx.headers.set("Authorization", `Bearer ${token}`);
       }
     },
-    // Persist the token returned by sign-in / sign-up
+    // Persist the bearer token emitted by Better Auth's bearer plugin
     onResponse: async (ctx) => {
-      const setCookie = ctx.response.headers.get("set-cookie");
-      if (!setCookie) return;
-      const match = setCookie.match(/better-auth\.session_token=([^;]+)/);
-      if (match?.[1]) {
-        await SecureStore.setItemAsync(TOKEN_KEY, match[1]);
+      const token = ctx.response.headers.get("set-auth-token");
+      if (token) {
+        await SecureStore.setItemAsync(TOKEN_KEY, token);
       }
     },
   },

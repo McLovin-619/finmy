@@ -16,6 +16,7 @@ import { loyaltyRoutes } from "./routes/loyalty";
 import { notificationRoutes } from "./routes/notifications";
 import { pushTokenRoutes } from "./routes/push-tokens";
 import { staffRoutes } from "./routes/staff";
+import { stockRoutes } from "./routes/stocks";
 import { subscriptionRoutes } from "./routes/subscriptions";
 import { userRoutes } from "./routes/users";
 import { walletRoutes } from "./routes/wallet";
@@ -64,7 +65,7 @@ app.use(
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 // Better Auth handles all /api/auth/** — basePath strips /api, so match /auth/**
-app.on(["GET", "POST"], "/auth/**", (c) => auth.handler(c.req.raw));
+app.on(["GET", "POST"], "/auth/*", (c) => auth.handler(c.req.raw));
 
 app.route("/allowances", allowanceRoutes);
 app.route("/bills", billRoutes);
@@ -74,6 +75,7 @@ app.route("/loyalty", loyaltyRoutes);
 app.route("/notifications", notificationRoutes);
 app.route("/push-tokens", pushTokenRoutes);
 app.route("/staff", staffRoutes);
+app.route("/stocks", stockRoutes);
 app.route("/subscriptions", subscriptionRoutes);
 app.route("/users", userRoutes);
 app.route("/wallet", walletRoutes);

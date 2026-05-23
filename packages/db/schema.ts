@@ -38,7 +38,11 @@ export const transactionTypeEnum = pgEnum("transaction_type", [
   "card_payment",
   "transfer_out",
   "transfer_in",
+  "stock_buy",
+  "stock_sell",
 ]);
+
+export const stockOrderSideEnum = pgEnum("stock_order_side", ["buy", "sell"]);
 
 export const transactionStatusEnum = pgEnum("transaction_status", [
   "pending",
@@ -341,6 +345,54 @@ export const investmentSchedules = pgTable(
   ],
 );
 
+// ─── Stock holdings ───────────────────────────────────────────────────────────
+//
+// One row per (user, symbol). sharesMicro stores fractional shares at 10^6
+// precision (1_000_000 = 1 share); avgCostHalalas is the weighted-average buy
+// price per whole share. Live market value is computed at read time using the
+// stocks service quote — never stored.
+
+export const stockHoldings = pgTable(
+  "stock_holdings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    symbol: text("symbol").notNull(),
+    sharesMicro: bigint("shares_micro", { mode: "number" }).notNull(),
+    avgCostHalalas: integer("avg_cost_halalas").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index("stock_holdings_user_symbol_idx").on(t.userId, t.symbol)],
+);
+
+// ─── Stock orders ─────────────────────────────────────────────────────────────
+//
+// Immutable trade log. priceHalalas is the live quote at execution time
+// (per whole share); amountHalalas is the SAR notional that hit the wallet.
+
+export const stockOrders = pgTable(
+  "stock_orders",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    symbol: text("symbol").notNull(),
+    side: stockOrderSideEnum("side").notNull(),
+    sharesMicro: bigint("shares_micro", { mode: "number" }).notNull(),
+    priceHalalas: integer("price_halalas").notNull(),
+    amountHalalas: integer("amount_halalas").notNull(),
+    executedAt: timestamp("executed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("stock_orders_user_executed_idx").on(t.userId, t.executedAt)],
+);
+
 // ─── Bills ────────────────────────────────────────────────────────────────────
 //
 // provider is free-form text ("tabby" | "tamara" | null) — enum would require
@@ -588,6 +640,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   linkedAccounts: many(linkedAccounts),
   staff: many(householdStaff),
   investmentSchedules: many(investmentSchedules),
+  stockHoldings: many(stockHoldings),
+  stockOrders: many(stockOrders),
   bills: many(bills),
   cards: many(cards),
   subscriptions: many(subscriptions),
@@ -640,6 +694,14 @@ export const investmentSchedulesRelations = relations(investmentSchedules, ({ on
     fields: [investmentSchedules.walletId],
     references: [digitalWallets.id],
   }),
+}));
+
+export const stockHoldingsRelations = relations(stockHoldings, ({ one }) => ({
+  user: one(users, { fields: [stockHoldings.userId], references: [users.id] }),
+}));
+
+export const stockOrdersRelations = relations(stockOrders, ({ one }) => ({
+  user: one(users, { fields: [stockOrders.userId], references: [users.id] }),
 }));
 
 export const billsRelations = relations(bills, ({ one }) => ({

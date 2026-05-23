@@ -394,9 +394,8 @@ export default function HomeScreen() {
         </View>
         <SubscriptionsSummary data={subscriptionsQuery.data} />
 
-        {/* Sign out (mock only) */}
         <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-          <Text style={styles.signOutText}>Sign out (mock)</Text>
+          <Text style={styles.signOutText}>Sign out</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

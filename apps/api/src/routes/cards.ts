@@ -80,6 +80,29 @@ export const cardRoutes = new Hono()
     },
   )
 
+  // POST /api/cards/:id/unfreeze — unfreeze a card
+  .post("/:id/unfreeze", async (c) => {
+    const userId = c.get("user").id;
+    const cardId = c.req.param("id");
+
+    const [updated] = await db
+      .update(cards)
+      .set({ status: "active" })
+      .where(and(eq(cards.id, cardId), eq(cards.userId, userId), eq(cards.status, "frozen")))
+      .returning({ id: cards.id });
+
+    if (!updated) {
+      const exists = await db.query.cards.findFirst({
+        where: and(eq(cards.id, cardId), eq(cards.userId, userId)),
+        columns: { status: true },
+      });
+      if (!exists) return c.json({ error: "Card not found" }, 404);
+      return c.json({ error: "Card is not frozen" }, 422);
+    }
+
+    return c.json({ success: true });
+  })
+
   // POST /api/cards/:id/freeze — freeze a card
   .post("/:id/freeze", async (c) => {
     const userId = c.get("user").id;

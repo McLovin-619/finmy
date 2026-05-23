@@ -20,6 +20,7 @@ type AuthContext = {
   signUp: (name: string, email: string, password: string) => Promise<void>;
   biometricSignIn: () => Promise<void>;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
   completeOnboarding: () => void;
 };
 
@@ -28,25 +29,28 @@ const AuthContext = createContext<AuthContext | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: "loading" });
 
+  const refreshSession = useCallback(async () => {
+    const result = await authClient.getSession();
+    if (result.data?.user) {
+      setState({
+        status: "authenticated",
+        onboardingComplete: true,
+        user: {
+          id: result.data.user.id,
+          name: result.data.user.name,
+          email: result.data.user.email,
+          image: result.data.user.image,
+        },
+      });
+    } else {
+      setState({ status: "unauthenticated" });
+    }
+  }, []);
+
   // On mount, check if there's an existing valid session
   useEffect(() => {
-    authClient.getSession().then((result) => {
-      if (result.data?.user) {
-        setState({
-          status: "authenticated",
-          onboardingComplete: true,
-          user: {
-            id: result.data.user.id,
-            name: result.data.user.name,
-            email: result.data.user.email,
-            image: result.data.user.image,
-          },
-        });
-      } else {
-        setState({ status: "unauthenticated" });
-      }
-    });
-  }, []);
+    refreshSession();
+  }, [refreshSession]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     setState({ status: "loading" });
@@ -72,26 +76,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (name: string, email: string, password: string) => {
-    setState({ status: "loading" });
     const result = await authClient.signUp.email({ name, email, password });
-    if (result.error) {
-      setState({ status: "unauthenticated" });
-      throw new Error(result.error.message ?? "Sign up failed");
-    }
-    if (!result.data?.user) {
-      setState({ status: "unauthenticated" });
-      throw new Error("Sign up failed");
-    }
-    setState({
-      status: "authenticated",
-      onboardingComplete: false,
-      user: {
-        id: result.data.user.id,
-        name: result.data.user.name,
-        email: result.data.user.email,
-        image: result.data.user.image,
-      },
-    });
+    if (result.error) throw new Error(result.error.message ?? "Sign up failed");
+    if (!result.data?.user) throw new Error("Sign up failed");
+    // With requireEmailVerification: true the account is created but unverified;
+    // the user must enter the OTP before we promote state to "authenticated".
+    setState({ status: "unauthenticated" });
   }, []);
 
   const biometricSignIn = useCallback(async () => {
@@ -137,8 +127,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ state, signIn, signUp, biometricSignIn, signOut, completeOnboarding }),
-    [state, signIn, signUp, biometricSignIn, signOut, completeOnboarding],
+    () => ({ state, signIn, signUp, biometricSignIn, signOut, refreshSession, completeOnboarding }),
+    [state, signIn, signUp, biometricSignIn, signOut, refreshSession, completeOnboarding],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

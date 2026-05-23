@@ -58,6 +58,17 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 type Range = "1M" | "3M" | "6M" | "1Y";
 const RANGE_SLICE: Record<Range, number> = { "1M": 2, "3M": 4, "6M": 7, "1Y": 12 };
 
+// ─── Market spotlight types + helpers ─────────────────────────────────────────
+
+type SpotlightQuote = {
+  symbol: string;
+  name: string;
+  priceHalalas: number;
+  changePct: number;
+};
+type SpotlightHistory = { date: string; closeHalalas: number };
+type SpotlightDetail = { quote: SpotlightQuote; history: SpotlightHistory[] };
+
 // ─── Area chart (same cubic-bezier technique as investments.tsx) ──────────────
 
 function AreaChart({ data, color }: { data: PortfolioDataPoint[]; color: string }) {
@@ -107,12 +118,91 @@ function AreaChart({ data, color }: { data: PortfolioDataPoint[]; color: string 
   );
 }
 
+// ─── Market spotlight (3 random stocks, expand/collapse) ─────────────────────
+
+const SPOTLIGHT_CARD_WIDTH = 128;
+
+function MiniSparkline({ data, color }: { data: SpotlightHistory[]; color: string }) {
+  const width = SPOTLIGHT_CARD_WIDTH - 20;
+  const height = 38;
+
+  if (data.length < 2) return <View style={{ width, height }} />;
+
+  const values = data.map((d) => d.closeHalalas);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal || 1;
+
+  const getX = (i: number) => (i / (values.length - 1)) * width;
+  const getY = (v: number) => (1 - (v - minVal) / range) * height;
+
+  let path = `M ${getX(0)} ${getY(values[0])}`;
+  for (let i = 1; i < values.length; i++) {
+    path += ` L ${getX(i)} ${getY(values[i])}`;
+  }
+
+  return (
+    <Svg width={width} height={height}>
+      <Path d={path} stroke={color} strokeWidth={1.5} fill="none" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+function SpotlightCard({ symbol }: { symbol: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["stocks", "detail", symbol, "1M"],
+    queryFn: async () => {
+      const res = await apiFetch(`/api/stocks/${encodeURIComponent(symbol)}?range=1M`);
+      if (!res.ok) throw new Error("spotlight failed");
+      return res.json() as Promise<SpotlightDetail>;
+    },
+    refetchInterval: 60_000,
+  });
+
+  const q = data?.quote;
+  const up = (q?.changePct ?? 0) >= 0;
+  const color = up ? "#10B981" : "#EF4444";
+
+  return (
+    <TouchableOpacity
+      style={styles.spotlightCard}
+      activeOpacity={0.8}
+      onPress={() => router.push(`/stocks/${encodeURIComponent(symbol)}` as any)}
+    >
+      <Text style={styles.spotlightSym}>{symbol.replace(".SR", "")}</Text>
+      {isLoading || !q ? (
+        <ActivityIndicator size="small" color="#7C3AED" style={{ marginVertical: 8 }} />
+      ) : (
+        <>
+          <MiniSparkline data={data?.history ?? []} color={color} />
+          <Text style={styles.spotlightPrice}>SAR {(q.priceHalalas / 100).toFixed(2)}</Text>
+          <Text style={[styles.spotlightChange, { color }]}>
+            {up ? "▲" : "▼"} {Math.abs(q.changePct).toFixed(2)}%
+          </Text>
+        </>
+      )}
+    </TouchableOpacity>
+  );
+}
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function InvestScreen() {
   const insets = useSafeAreaInsets();
   const [range, setRange] = useState<Range>("1Y");
   const { data: investData, isLoading: investLoading } = useInvestments();
+
+  // Market spotlight — horizontal scroller of all watchlist symbols.
+  const { data: watchlistData } = useQuery({
+    queryKey: ["stocks", "watchlist"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/stocks/watchlist");
+      if (!res.ok) throw new Error("watchlist failed");
+      return res.json() as Promise<{ quotes: SpotlightQuote[] }>;
+    },
+    refetchInterval: 60_000,
+  });
+  const spotlightSymbols = watchlistData?.quotes?.map((q) => q.symbol) ?? [];
 
   const activeSchedules = investData?.schedules.filter((s) => s.status === "active") ?? [];
   const monthlyHalalas = investData?.summary.totalMonthlyHalalas ?? 0;
@@ -221,6 +311,55 @@ export default function InvestScreen() {
               ))}
           </View>
         </View>
+
+        {/* Market spotlight — horizontal scroller across the full watchlist */}
+        <View style={styles.spotlightWrap}>
+          <View style={styles.spotlightHeaderRow}>
+            <View style={styles.spotlightTitleRow}>
+              <Ionicons name="pulse-outline" size={14} color="#7C3AED" />
+              <Text style={styles.spotlightTitle}>Market spotlight</Text>
+            </View>
+            <Text style={styles.spotlightHint}>Swipe →</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.spotlightScroll}
+          >
+            {spotlightSymbols.map((sym) => (
+              <SpotlightCard key={sym} symbol={sym} />
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Stock market card */}
+        <TouchableOpacity
+          style={styles.marketCard}
+          activeOpacity={0.85}
+          onPress={() => router.push("/stocks" as any)}
+        >
+          <LinearGradient
+            colors={["#1A1426", "#3D2A6B"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.marketGrad}
+          >
+            <View style={styles.marketLeft}>
+              <View style={styles.marketBadge}>
+                <View style={styles.marketDot} />
+                <Text style={styles.marketBadgeText}>LIVE</Text>
+              </View>
+              <Text style={styles.marketTitle}>Stock market</Text>
+              <Text style={styles.marketSub}>
+                Trade US & Tadawul tickers with mock money at real-time prices
+              </Text>
+            </View>
+            <View style={styles.marketRight}>
+              <Ionicons name="trending-up" size={28} color="#A7F3D0" />
+              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.6)" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
 
         {/* Auto-schedule quick view */}
         <View style={styles.sectionHeader}>
@@ -501,6 +640,84 @@ const styles = StyleSheet.create({
   pausedDot: { backgroundColor: "#F59E0B" },
   activeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#10B981" },
   pausedText: { color: "#D97706" },
+
+  // Market spotlight
+  spotlightWrap: { marginBottom: 20 },
+  spotlightHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+    paddingHorizontal: 22,
+  },
+  spotlightTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  spotlightTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  spotlightHint: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9CA3AF" },
+  spotlightScroll: { paddingHorizontal: 20, gap: 10 },
+  spotlightCard: {
+    width: SPOTLIGHT_CARD_WIDTH,
+    backgroundColor: "white",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    alignItems: "flex-start",
+    gap: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  spotlightSym: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#1A1426" },
+  spotlightPrice: {
+    fontSize: 13,
+    fontFamily: "PlusJakartaSans_700Bold",
+    color: "#1A1426",
+    marginTop: 4,
+  },
+  spotlightChange: { fontSize: 11, fontFamily: "Inter_500Medium" },
+
+  // Market card
+  marketCard: {
+    marginHorizontal: 20,
+    borderRadius: 20,
+    overflow: "hidden",
+    marginBottom: 24,
+    shadowColor: "#7C3AED",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  marketGrad: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 18,
+    gap: 14,
+  },
+  marketLeft: { flex: 1 },
+  marketBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "rgba(167, 243, 208, 0.18)",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+    marginBottom: 8,
+  },
+  marketDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#10B981" },
+  marketBadgeText: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: "#A7F3D0" },
+  marketTitle: { fontSize: 18, fontFamily: "PlusJakartaSans_700Bold", color: "white" },
+  marketSub: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.7)",
+    marginTop: 4,
+    lineHeight: 17,
+  },
+  marketRight: { alignItems: "center", gap: 4 },
 
   // Sectors
   sectorsCard: {

@@ -3,8 +3,12 @@
  * Run from apps/api: node --env-file=.env --import tsx src/seed.ts
  *
  * Each user goes through the full signup flow: user → digital_wallet → loyalty row.
+ * Mock accounts are marked email_verified so they bypass the OTP flow.
  */
 import { auth } from "@finmy/auth";
+import { db } from "@finmy/db";
+import { users } from "@finmy/db/schema";
+import { eq } from "drizzle-orm";
 
 const MOCK_USERS = [
   { name: "Ahmed Al-Rashid",  email: "ahmed@finmy.app",   password: "Password123!" },
@@ -22,6 +26,10 @@ async function seed() {
       const res = await auth.api.signUpEmail({
         body: { name: u.name, email: u.email, password: u.password },
       });
+      await db
+        .update(users)
+        .set({ emailVerified: true, updatedAt: new Date() })
+        .where(eq(users.id, res.user.id));
       console.log(`  OK    ${u.email}  →  ${res.user.id}`);
     } catch (err: any) {
       const msg = err?.body?.message ?? err?.message ?? String(err);

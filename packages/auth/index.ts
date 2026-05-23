@@ -2,7 +2,7 @@ import { createEnv } from "@finmy/lib";
 import { db } from "@finmy/db";
 import { accounts, digitalWallets, loyalty, sessions, users, verifications } from "@finmy/db/schema";
 import { betterAuth } from "better-auth";
-import { bearer } from "better-auth/plugins";
+import { bearer, emailOTP } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createMiddleware } from "hono/factory";
 import { z } from "zod";
@@ -53,7 +53,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true,
     minPasswordLength: 8,
     sendResetPassword: async ({ user, token }) => {
       const link = `finmy://reset-password?token=${encodeURIComponent(token)}`;
@@ -65,7 +65,7 @@ export const auth = betterAuth({
             Authorization: `Bearer ${env.RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: "finmy <no-reply@finmy.app>",
+            from: "finmy <onboarding@resend.dev>",
             to: user.email,
             subject: "Reset your finmy password",
             html: `<p>Reset your finmy password by tapping the link below. This link expires in 1 hour.</p><p><a href="${link}">Reset password</a></p><p>If you did not request this, your account is safe — ignore this email.</p>`,
@@ -108,7 +108,41 @@ export const auth = betterAuth({
     },
   },
 
-  plugins: [bearer()],
+  plugins: [
+    bearer(),
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 600,
+      allowedAttempts: 5,
+      storeOTP: "hashed",
+      sendVerificationOnSignUp: true,
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        if (env.RESEND_API_KEY) {
+          const subject =
+            type === "forget-password"
+              ? "Your finmy password reset code"
+              : type === "sign-in"
+                ? "Your finmy sign-in code"
+                : "Verify your finmy account";
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${env.RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+              from: "finmy <onboarding@resend.dev>",
+              to: email,
+              subject,
+              html: `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#1A1426"><h1 style="font-size:20px;margin:0 0 8px">Verify your email</h1><p style="font-size:14px;color:#6B7280;margin:0 0 24px">Use the code below to finish signing in to finmy. It expires in 10 minutes.</p><div style="font-size:32px;font-weight:700;letter-spacing:8px;text-align:center;background:#F4F1FA;color:#7C3AED;padding:20px;border-radius:12px">${otp}</div><p style="font-size:12px;color:#9CA3AF;margin:24px 0 0">If you did not request this, ignore this email — your account is safe.</p></div>`,
+            }),
+          });
+        } else {
+          console.log(`[auth] OTP ${type} for ${email}: ${otp}`);
+        }
+      },
+    }),
+  ],
 
   socialProviders: {
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET

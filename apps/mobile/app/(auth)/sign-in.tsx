@@ -27,6 +27,7 @@ import {
   type BiometricType,
 } from "@/lib/biometrics";
 import { useAuth } from "@/lib/auth";
+import { authClient } from "@/lib/auth-client";
 
 const SignInSchema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -78,7 +79,21 @@ export default function SignInScreen() {
     try {
       await signIn(data.email, data.password);
     } catch (err) {
-      Alert.alert("Sign in failed", err instanceof Error ? err.message : "Please try again.");
+      const message = err instanceof Error ? err.message : "Please try again.";
+      // Better Auth returns "Email not verified" (code EMAIL_NOT_VERIFIED) when
+      // the account exists with a valid password but emailVerified is false.
+      // Auto-send a fresh OTP and route the user into the verify-email flow.
+      if (/not verified/i.test(message)) {
+        await authClient.emailOtp
+          .sendVerificationOtp({ email: data.email, type: "email-verification" })
+          .catch(() => {});
+        router.replace({
+          pathname: "/(auth)/verify-email",
+          params: { email: data.email },
+        } as any);
+        return;
+      }
+      Alert.alert("Sign in failed", message);
       return;
     }
     // Offer to enable biometrics after first password sign-in

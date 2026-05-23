@@ -2,7 +2,7 @@ import { db } from "@finmy/db";
 import { allowances } from "@finmy/db/schema";
 import { sessionMiddleware } from "@finmy/auth";
 import { zValidator } from "@hono/zod-validator";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -73,4 +73,37 @@ export const allowanceRoutes = new Hono()
 
       return c.json({ allowance: allowanceShape(inserted) }, 201);
     },
-  );
+  )
+
+  // PATCH /api/allowances/:id — toggle active/paused
+  .patch(
+    "/:id",
+    zValidator("json", z.object({ isActive: z.boolean() })),
+    async (c) => {
+      const userId = c.get("user").id;
+      const id = c.req.param("id");
+      const { isActive } = c.req.valid("json");
+
+      const [updated] = await db
+        .update(allowances)
+        .set({ isActive })
+        .where(and(eq(allowances.id, id), eq(allowances.userId, userId)))
+        .returning();
+
+      if (!updated) return c.json({ error: "Allowance not found" }, 404);
+      return c.json({ allowance: allowanceShape(updated) });
+    },
+  )
+
+  // DELETE /api/allowances/:id
+  .delete("/:id", async (c) => {
+    const userId = c.get("user").id;
+    const id = c.req.param("id");
+
+    const result = await db
+      .delete(allowances)
+      .where(and(eq(allowances.id, id), eq(allowances.userId, userId)));
+
+    if (result.rowCount === 0) return c.json({ error: "Allowance not found" }, 404);
+    return c.json({ success: true });
+  });

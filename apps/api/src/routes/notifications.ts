@@ -53,6 +53,18 @@ export const notificationRoutes = new Hono()
     },
   )
 
+  // POST /api/notifications/read-all — mark all as read
+  .post("/read-all", async (c) => {
+    const userId = c.get("user").id;
+
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+
+    return c.json({ success: true });
+  })
+
   // PATCH /api/notifications/:id/read — mark a notification as read
   .patch("/:id/read", async (c) => {
     const userId = c.get("user").id;
